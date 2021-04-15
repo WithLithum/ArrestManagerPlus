@@ -149,7 +149,7 @@ namespace Arrest_Manager
                           Game.LocalPlayer.Character.Tasks.PlayAnimation("random@arrests", "generic_radio_chatter", 1.5f, AnimationFlags.UpperBodyOnly | AnimationFlags.SecondaryTask);
                           GameFiber.Wait(1000);
 
-                          bleepPlayer.Play();
+                          BleepPlayer.Play();
                           GameFiber.Wait(500);
                       }
 

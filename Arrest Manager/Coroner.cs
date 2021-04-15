@@ -16,9 +16,9 @@ namespace Arrest_Manager
         internal static Model CoronerVehicleModel { get; set; } = new Model("SPEEDO");
         internal static Model CoronerModel { get; set; } = new Model("S_M_M_Doctor_01");
 
-        private static SoundPlayer cameraSound = new SoundPlayer("LSPDFR/audio/scanner/Arrest Manager Audio/Camera.wav");       
+        private static readonly SoundPlayer cameraSound = new SoundPlayer("LSPDFR/audio/scanner/Arrest Manager Audio/Camera.wav");       
 
-        private static List<Ped> bodiesBeingHandled = new List<Ped>();
+        private static readonly List<Ped> bodiesBeingHandled = new List<Ped>();
 
         private readonly List<Ped> deadBodies;
         private Vehicle coronerVeh;
@@ -127,14 +127,14 @@ namespace Arrest_Manager
                     passenger.WarpIntoVehicle(coronerVeh, 0);
                     Functions.SetPedCantBeArrestedByPlayer(passenger, true);
                     Functions.SetPedCanBePulledOver(driver, false);
-                    Game.DisplayHelp("Coroner en-route.");
+                    Game.DisplayNotification("~b~Dispatch~w~: Requesting a coroner team to " + World.GetStreetName(World.GetStreetHash(Game.LocalPlayer.Character.Position)));
                     if (anims)
                     {
-                        Game.LocalPlayer.Character.Tasks.PlayAnimation("random@arrests", "generic_radio_chatter", 1.5f, AnimationFlags.UpperBodyOnly | AnimationFlags.SecondaryTask);
+                        Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 3000);
                         GameFiber.Wait(1000);
-                        SceneManager.bleepPlayer.Play();
+                        SceneManager.BleepPlayer.Play();
                     }
-                    driveToPosition(driver, coronerVeh, destination);
+                    TaskCoronerDriveToPosition(driver, coronerVeh, destination);
                     coronerBlip.Delete();
 
                     while (deadBodies.Count > 0)
@@ -228,7 +228,7 @@ namespace Arrest_Manager
                     msg = "It's back to watching San Andreas's CCTV stream now, then.";
                     break;
                 case 13:
-                    msg = "I heard dinosaurs are back. Apparently they've evolved and are now fit to moderate forums.";
+                    msg = "Bejoljo's server goes down again. Why he implemented that dumb update system?";
                     break;
                 case 14:
                     msg = "I like how people remained calm there. I wonder how they learned to stop shitting bricks...";
@@ -416,7 +416,7 @@ namespace Arrest_Manager
             return nearbyDeads;
         }
 
-        private static void driveToPosition(Ped driver, Vehicle veh, Vector3 pos)
+        private static void TaskCoronerDriveToPosition(Ped driver, Vehicle veh, Vector3 pos)
         {
 
             Ped playerPed = Game.LocalPlayer.Character;
@@ -448,7 +448,7 @@ namespace Arrest_Manager
                     }
                 }
             });
-            Rage.Task driveToPed = null;
+            Task driveToPed = null;
             driver.Tasks.PerformDrivingManeuver(VehicleManeuver.GoForwardStraight).WaitForCompletion(500);
             while (Vector3.Distance(veh.Position, pos) > 35f)
             {
@@ -520,7 +520,7 @@ namespace Arrest_Manager
                     veh.Position = SpawnPoint;
                     veh.Heading = Heading;
                     drivingLoopCount = 39;
-                    Game.DisplayHelp("Transport taking too long? Hold down ~b~" + EntryPoint.KeyConvert.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
+                    Game.DisplayHelp("Service taking too long? Hold down ~b~" + EntryPoint.KeyConvert.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
                 }
                 // if van is stuck for a 2nd time or takes too long, spawn it very near to the suspect
                 else if (((drivingLoopCount >= 70 || waitCount >= 110) && EntryPoint.AllowWarping) || forceCloseSpawn)
