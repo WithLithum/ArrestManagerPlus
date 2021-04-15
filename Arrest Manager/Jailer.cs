@@ -279,45 +279,49 @@ namespace Arrest_Manager
 
             //Listens for key input and calls appropriate method
 
-            while (true)
+            GameFiber.StartNew(() =>
             {
-
-                Game.LocalPlayer.WantedLevel = 0;
-                var playerPed = Game.LocalPlayer.Character;
-                GameFiber.Yield();
-                Game.SetRelationshipBetweenRelationshipGroups("PLAYER", "ARRESTEDSUSPECTS", Relationship.Respect);
-                Game.SetRelationshipBetweenRelationshipGroups("ARRESTEDSUSPECTS", "PLAYER", Relationship.Respect);
-                Game.SetRelationshipBetweenRelationshipGroups("COP", "ARRESTEDSUSPECTS", Relationship.Respect);
-                Game.SetRelationshipBetweenRelationshipGroups("ARRESTEDSUSPECTS", "COP", Relationship.Respect);
-                //while you have the option to choose, listen for input
-                while (CanChoose)
+                while (true)
                 {
+                    Game.LocalPlayer.WantedLevel = 0;
+                    var playerPed = Game.LocalPlayer.Character;
                     GameFiber.Yield();
-                    playerPed = Game.LocalPlayer.Character;
-
-
-                    //Check: first for warp, release, then for multi, then for single
-
-                }
-
-                if (autoDoorEnabled)
-                {
-                    if (playerPed.IsInAnyVehicle(false))
+                    Game.SetRelationshipBetweenRelationshipGroups("PLAYER", "ARRESTEDSUSPECTS", Relationship.Respect);
+                    Game.SetRelationshipBetweenRelationshipGroups("ARRESTEDSUSPECTS", "PLAYER", Relationship.Respect);
+                    Game.SetRelationshipBetweenRelationshipGroups("COP", "ARRESTEDSUSPECTS", Relationship.Respect);
+                    Game.SetRelationshipBetweenRelationshipGroups("ARRESTEDSUSPECTS", "COP", Relationship.Respect);
+                    Game.LogTrivial("AM+: Relationship - set");
+                    //while you have the option to choose, listen for input
+                    while (CanChoose)
                     {
-                        if (playerPed.CurrentVehicle.Driver == playerPed && playerPed.CurrentVehicle.Speed > 3f && !doorsClosed)
+                        GameFiber.Yield();
+                        playerPed = Game.LocalPlayer.Character;
+
+
+                        //Check: first for warp, release, then for multi, then for single
+
+                    }
+
+                    if (autoDoorEnabled)
+                    {
+                        if (playerPed.IsInAnyVehicle(false))
                         {
-                            doorsClosed = true;
-                            NativeFunction.Natives.SET_VEHICLE_DOORS_SHUT(playerPed.CurrentVehicle, true);
+                            if (playerPed.CurrentVehicle.Driver == playerPed && playerPed.CurrentVehicle.Speed > 3f && !doorsClosed)
+                            {
+                                doorsClosed = true;
+                                NativeFunction.Natives.SET_VEHICLE_DOORS_SHUT(playerPed.CurrentVehicle, true);
+                            }
+                        }
+                        else
+                        {
+
+                            doorsClosed = false;
                         }
                     }
-                    else
-                    {
-
-                        doorsClosed = false;
-                    }
+                    Game.LocalPlayer.WantedLevel = 0;
                 }
-                Game.LocalPlayer.WantedLevel = 0;
-            }
+            }, "Choice");
+            Game.LogTrivial("AM+: Done starting fiber");
         }
         //Eventhandlers for on/off duty
 
