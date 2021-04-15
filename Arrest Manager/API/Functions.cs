@@ -178,7 +178,7 @@ namespace Arrest_Manager.API
         /// <returns></returns>
         public static bool IsPedGrabbed(Ped ped)
         {
-            if (PedManager.EnableGrab)
+            if (PedManager.enableGrab)
             {
                 return ped.Equals(PedManager.pedfollowing);
             }
@@ -194,7 +194,7 @@ namespace Arrest_Manager.API
         /// <returns></returns>
         public static bool IsPedGrabbed()
         {
-            return PedManager.EnableGrab;
+            return PedManager.enableGrab;
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace Arrest_Manager.API
         /// </summary>
         public static void ReleaseGrabbedPed()
         {
-            PedManager.EnableGrab = false;
+            PedManager.enableGrab = false;
         }
 
         /// <summary>

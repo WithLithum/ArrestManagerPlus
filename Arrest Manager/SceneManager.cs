@@ -409,13 +409,13 @@ namespace Arrest_Manager
                     if (_menuPool.IsAnyMenuOpen()) { Rage.Native.NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0); }
                     else if ((Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(GrabPedModifierKey) || GrabPedModifierKey == Keys.None) && Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(GrabPedKey))
                     {
-                        if (!EnableGrab)
+                        if (!enableGrab)
                         {
                             PedManager.GrabPed();
                         }
                         else
                         {
-                            EnableGrab = false;
+                            enableGrab = false;
                         }
                     }
                     
