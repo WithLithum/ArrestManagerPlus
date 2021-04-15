@@ -14,19 +14,20 @@ namespace Arrest_Manager
 
     internal class Coroner
     {
+        internal static Model CoronerVehicleModel { get; set; } = new Model("SPEEDO");
+        internal static Model CoronerModel { get; set; } = new Model("S_M_M_Doctor_01");
+
         private static SoundPlayer cameraSound = new SoundPlayer("LSPDFR/audio/scanner/Arrest Manager Audio/Camera.wav");       
-        public static Model coronerVehicleModel = new Model("SPEEDO");
-        public static Model coronerModel = new Model("S_M_M_Doctor_01");
+
         private static List<Ped> bodiesBeingHandled = new List<Ped>();
 
-        private List<Ped> deadBodies = new List<Ped>();
+        private readonly List<Ped> deadBodies;
         private Vehicle coronerVeh;
         private Ped driver;
         private Ped passenger;
         private Vector3 destination;
-        private bool anims;
-        private List<Rage.Object> bodyBags = new List<Rage.Object>();
-        private Blip coronerBlip;
+        private readonly bool anims;
+        private readonly List<Rage.Object> bodyBags = new List<Rage.Object>();
 
         public static bool CanBeCalled(Vector3 destination)
         {
@@ -107,21 +108,21 @@ namespace Arrest_Manager
                         }
                         GameFiber.Yield();
                     }
-                    coronerVeh = new Vehicle(coronerVehicleModel, SpawnPoint, Heading);
+                    coronerVeh = new Vehicle(CoronerVehicleModel, SpawnPoint, Heading);
                     coronerVeh.IsPersistent = true;
                     if (coronerVeh.HasSiren)
                     {
                         coronerVeh.IsSirenOn = true;
                     }
-                    coronerBlip = coronerVeh.AttachBlip();
+                    var coronerBlip = coronerVeh.AttachBlip();
                     coronerBlip.Color = System.Drawing.Color.Black;
                     coronerBlip.Flash(1000, 30000);
-                    driver = new Ped(coronerModel, Vector3.Zero, 0);
+                    driver = new Ped(CoronerModel, Vector3.Zero, 0);
                     driver.MakeMissionPed();
                     driver.IsInvincible = true;
                     driver.WarpIntoVehicle(coronerVeh, -1);
 
-                    passenger = new Ped(coronerModel, Vector3.Zero, 0);
+                    passenger = new Ped(CoronerModel, Vector3.Zero, 0);
                     passenger.MakeMissionPed();
                     passenger.IsInvincible = true;
                     passenger.WarpIntoVehicle(coronerVeh, 0);
@@ -134,10 +135,10 @@ namespace Arrest_Manager
                     }
                     driveToPosition(driver, coronerVeh, destination);
                     coronerBlip.Delete();
+
                     while (deadBodies.Count > 0)
                     {
-                        deadBodies.OrderBy(x => x.DistanceTo(driver.Position));
-                        foreach (Ped body in deadBodies.ToArray())
+                        foreach (Ped body in deadBodies.OrderBy(x => x.DistanceTo(driver.Position)))
                         {
                             if (body.Exists() && !bodiesBeingHandled.Contains(body))
                             {
@@ -152,6 +153,7 @@ namespace Arrest_Manager
                     }
                     LeaveScene();
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
                 {
                     Game.LogTrivial(e.ToString());
@@ -168,13 +170,12 @@ namespace Arrest_Manager
                         if (ent.Exists()) { ent.Delete(); }
                     }
                 }
+#pragma warning restore CA1031 // Do not catch general exception types
             });
         }
 
         private void LeaveScene()
         {
-
-
             GameFiber.Wait(2500);
             foreach (Rage.Object obj in bodyBags)
             {
@@ -277,12 +278,9 @@ namespace Arrest_Manager
             }
 
 
-            if (driver.Exists())
+            if (driver.Exists() && Vector3.Distance(driver.Position, Game.LocalPlayer.Character.Position) < 60f)
             {
-                if (Vector3.Distance(driver.Position, Game.LocalPlayer.Character.Position) < 60f)
-                {
-                    Game.DisplaySubtitle("~b~Driver: " + msg, 7000);
-                }
+                Game.DisplaySubtitle("~b~Driver: " + msg, 7000);
             }
             passenger.Tasks.FollowNavigationMeshToPosition(coronerVeh.GetOffsetPositionRight(2), coronerVeh.Heading, 1.7f);
             driver.Tasks.FollowNavigationMeshToPosition(coronerVeh.GetOffsetPositionRight(-2), coronerVeh.Heading, 1.7f).WaitForCompletion(8000);

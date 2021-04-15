@@ -161,41 +161,6 @@ namespace Arrest_Manager
             return SceneManagementSpawnDistance;
         }
 
-
-
-
-        //Obsolete
-
-
-        public static float getX()
-        {
-            Ped playerPed = Game.LocalPlayer.Character;
-            Vector3 currentPosition = playerPed.Position;
-            return currentPosition.X;
-        }
-        public static float getY()
-        {
-            Ped playerPed = Game.LocalPlayer.Character;
-            Vector3 currentPosition = playerPed.Position;
-            return currentPosition.Y;
-        }
-        public static float getZ()
-        {
-            Ped playerPed = Game.LocalPlayer.Character;
-            Vector3 currentPosition = playerPed.Position;
-            return currentPosition.Z;
-        }
-        public static float getHeading()
-        {
-            Ped playerPed = Game.LocalPlayer.Character;
-            return playerPed.Heading;
-        }
-
-
-
-        //Ped info
-
-
         public static List<Ped> suspectsPendingTransport { get; set; }
         private static Ped getSuspectAPI()
         {
@@ -3107,16 +3072,16 @@ namespace Arrest_Manager
                     getTransportSpawnDistance();
                     getSceneManagementSpawnDistance();
                     VehicleManager.RecruitNearbyTowTrucks = initialiseFile().ReadBoolean("Misc", "RecruitNearbyTowTrucks");
-                    Coroner.coronerModel = initialiseFile().ReadString("Misc", "CoronerPedModel", "S_M_M_DOCTOR_01");
-                    if (!Coroner.coronerModel.IsValid)
+                    Coroner.CoronerModel = initialiseFile().ReadString("Misc", "CoronerPedModel", "S_M_M_DOCTOR_01");
+                    if (!Coroner.CoronerModel.IsValid)
                     {
-                        Coroner.coronerModel = "S_M_M_DOCTOR_01";
+                        Coroner.CoronerModel = "S_M_M_DOCTOR_01";
                     }
 
-                    Coroner.coronerVehicleModel = initialiseFile().ReadString("Misc", "CoronerVehicleModel", "SPEEDO");
-                    if (!Coroner.coronerVehicleModel.IsValid || !Coroner.coronerVehicleModel.IsVehicle)
+                    Coroner.CoronerVehicleModel = initialiseFile().ReadString("Misc", "CoronerVehicleModel", "SPEEDO");
+                    if (!Coroner.CoronerVehicleModel.IsValid || !Coroner.CoronerVehicleModel.IsVehicle)
                     {
-                        Game.LogTrivial("Arrest Manager: The specified coroner vehicle is either invalid or not a vehicle. Use at own risk! " + Coroner.coronerVehicleModel.Name);
+                        Game.LogTrivial("Arrest Manager: The specified coroner vehicle is either invalid or not a vehicle. Use at own risk! " + Coroner.CoronerVehicleModel.Name);
                         
                     }
 
@@ -3149,7 +3114,7 @@ namespace Arrest_Manager
                 if (IsLSPDFRPluginRunning("PoliceSmartRadio"))
                 {
                     API.SmartRadioFuncs.AddActionToButton(Coroner.smartRadioMain, Coroner.CanBeCalled, "coroner");
-                    API.SmartRadioFuncs.AddActionToButton(VehicleManager.smartRadioTow, "tow");
+                    API.SmartRadioFuncs.AddActionToButton(VehicleManager.SmartRadioTow, "tow");
                     API.SmartRadioFuncs.AddActionToButton(API.SmartRadioFuncs.RequestTransport, canTransportBeCalled, "transport");
                 }
                 if (IsLSPDFRPluginRunning("VocalDispatch", new Version("1.6.0.0")))

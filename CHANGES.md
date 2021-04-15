@@ -40,4 +40,6 @@ As of GPL requirement, this document lists all noticeable changes.
 
 * Deprecate transport ped to hospital option
 
+* Deprecate instant arrest
+
 * Move Taxi service to it's own class

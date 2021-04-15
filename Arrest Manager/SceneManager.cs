@@ -330,7 +330,7 @@ namespace Arrest_Manager
         private static bool arrestBarDisplayTime = false;
 
         private static MenuPool _menuPool;
-        private static UIMenu ActiveMenu = PedManagementMenu;
+        private static UIMenu ActiveMenu = menuPedManagement;
         public static UIMenuListItem MenuSwitchListItem;
         public static void CreateMenus()
         {
@@ -342,8 +342,8 @@ namespace Arrest_Manager
             MenuSwitchListItem = new UIMenuListItem("Scene Management", "", menus);
             CreatePedManagementMenu();
             
-            _menuPool.Add(PedManagementMenu);
-            PedManagementMenu.OnListChange += OnListChange;
+            _menuPool.Add(menuPedManagement);
+            menuPedManagement.OnListChange += OnListChange;
             createVehicleManagementMenu();
             _menuPool.Add(vehicleManagementMenu);
             vehicleManagementMenu.OnListChange += OnListChange;
@@ -354,14 +354,14 @@ namespace Arrest_Manager
         public static void OnListChange(UIMenu sender, UIMenuListItem list, int index)
         {
             
-            if ((sender != PedManagementMenu && sender != vehicleManagementMenu) || list != MenuSwitchListItem) { return; }
+            if ((sender != menuPedManagement && sender != vehicleManagementMenu) || list != MenuSwitchListItem) { return; }
            
             string selectedmenustring = list.Collection[list.Index].ToString();
 
             UIMenu selectedmenu;
             if (selectedmenustring == "Ped Manager")
             {
-                selectedmenu = PedManagementMenu;
+                selectedmenu = menuPedManagement;
             }
             else
             {
@@ -399,7 +399,7 @@ namespace Arrest_Manager
                             }
                             else
                             {
-                                PedManagementMenu.Visible = !PedManagementMenu.Visible;
+                                menuPedManagement.Visible = !menuPedManagement.Visible;
 
                             }
 
@@ -409,13 +409,13 @@ namespace Arrest_Manager
                     if (_menuPool.IsAnyMenuOpen()) { Rage.Native.NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0); }
                     else if ((Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(GrabPedModifierKey) || GrabPedModifierKey == Keys.None) && Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(GrabPedKey))
                     {
-                        if (!enableGrab)
+                        if (!IsGrabEnabled)
                         {
                             PedManager.GrabPed();
                         }
                         else
                         {
-                            enableGrab = false;
+                            IsGrabEnabled = false;
                         }
                     }
                     

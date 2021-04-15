@@ -61,11 +61,12 @@ namespace Arrest_Manager
             TowTruck = null;
             return false;
         }
-        internal static void smartRadioTow()
+        internal static void SmartRadioTow()
         {
-            new VehicleManager().towVehicle(false);
+            new VehicleManager().TowVehicle(false);
         }
-        internal void towVehicle(bool playanims = true)
+
+        internal void TowVehicle(bool playanims = true)
         {
             Vehicle[] nearbyvehs = Game.LocalPlayer.Character.GetNearbyVehicles(2);
             if (nearbyvehs.Length == 0)
@@ -73,18 +74,18 @@ namespace Arrest_Manager
                 Game.DisplayNotification("~r~Couldn't detect a close enough vehicle.");
                 return;
             }
-            Vehicle car = nearbyvehs[0];
-            if (Vector3.Distance(Game.LocalPlayer.Character.Position, car.Position) > 6f)
+            var towingCar = nearbyvehs[0];
+            if (Vector3.Distance(Game.LocalPlayer.Character.Position, towingCar.Position) > 6f)
             {
                 Game.DisplayNotification("~r~Couldn't detect a close enough vehicle.");
                 return;
             }
-            if (car.HasOccupants)
+            if (towingCar.HasOccupants)
             {
                 if (nearbyvehs.Length == 2)
                 {
-                    car = nearbyvehs[1];
-                    if (car.HasOccupants)
+                    towingCar = nearbyvehs[1];
+                    if (towingCar.HasOccupants)
                     {
                         Game.DisplayNotification("~r~Couldn't detect a close enough vehicle without occupants.");
                         return;
@@ -97,12 +98,12 @@ namespace Arrest_Manager
                 }
 
             }
-            if (!car.Model.IsCar && !car.Model.IsBike && !car.Model.IsQuadBike)
+            if (!towingCar.Model.IsCar && !towingCar.Model.IsBike && !towingCar.Model.IsQuadBike)
             {
                 Game.DisplayNotification("Unfortunately, this vehicle can't be towed or impounded.");
                 return;
             }
-            towVehicle(car, playanims);
+            towVehicle(towingCar, playanims);
         }
         
         internal void towVehicle(Vehicle car, bool playanims = true)
@@ -676,7 +677,7 @@ namespace Arrest_Manager
             if (selectedItem == callForTowTruckItem)
             {
                 Rage.Native.NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
-                new VehicleManager().towVehicle();
+                new VehicleManager().TowVehicle();
                 vehicleManagementMenu.Visible = false;
             }
             else if (selectedItem == callForInsuranceItem)

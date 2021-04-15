@@ -1,4 +1,6 @@
-﻿using Albo1125.Common.CommonLibrary;
+﻿using System;
+using System.Reflection;
+using Albo1125.Common.CommonLibrary;
 using Rage;
 
 namespace Arrest_Manager.API
@@ -130,9 +132,8 @@ namespace Arrest_Manager.API
         /// <param name="PlayAnims">Determines whether the player performs the radio animation or not.</param>
         public static void RequestTowTruck(bool PlayAnims = true)
         {
-            new VehicleManager().towVehicle(PlayAnims);
+            new VehicleManager().TowVehicle(PlayAnims);
         }
-
 
         /// <summary>
         /// Requests insurance company pickup for the nearest valid vehicle.
@@ -142,8 +143,6 @@ namespace Arrest_Manager.API
             new VehicleManager().insurancePickUp();
         }
 
-        
-
         /// <summary>
         /// Raised whenever the player arrests a ped. Only raised once per arrested ped.
         /// </summary>
@@ -151,11 +150,7 @@ namespace Arrest_Manager.API
 
         internal static void OnPlayerArrestedPed(Ped ped)
         {
-           
-            if (PlayerArrestedPed != null)
-            {
-                PlayerArrestedPed(ped);
-            }
+            PlayerArrestedPed?.Invoke(ped);
         }
 
         /// <summary>
@@ -172,15 +167,15 @@ namespace Arrest_Manager.API
         }
 
         /// <summary>
-        /// Returns a boolean indicating if the specified ped is grabbed or not.
+        /// Determines whether the specified ped is grabbed.
         /// </summary>
         /// <param name="ped"></param>
-        /// <returns></returns>
+        /// <returns><c>true</c> if the ped is grabbed; otherwise, <c>false</c>.</returns>
         public static bool IsPedGrabbed(Ped ped)
         {
-            if (PedManager.enableGrab)
+            if (PedManager.IsGrabEnabled)
             {
-                return ped.Equals(PedManager.pedfollowing);
+                return ped.Equals(PedManager.FollowingPed);
             }
             else
             {
@@ -189,12 +184,12 @@ namespace Arrest_Manager.API
         }
 
         /// <summary>
-        /// Returns a boolean indicating if any ped is grabbed or not.
+        /// Determines whether the player is grabbing any ped.
         /// </summary>
-        /// <returns></returns>
+        /// <returns><c>true</c> if player is grabbing someone; otherwise, <c>false</c>.</returns>
         public static bool IsPedGrabbed()
         {
-            return PedManager.enableGrab;
+            return PedManager.IsGrabEnabled;
         }
 
         /// <summary>
@@ -202,18 +197,22 @@ namespace Arrest_Manager.API
         /// </summary>
         public static void ReleaseGrabbedPed()
         {
-            PedManager.enableGrab = false;
+            PedManager.IsGrabEnabled = false;
         }
 
         /// <summary>
         /// Arrests the ped as would happen using the Ped Management menu. Must use Grab feature to move the ped around and place in vehicle.
         /// </summary>
         /// <param name="suspect">The ped to be arrested.</param>
+        [Obsolete("You cannot arrest ped with API anymore.")]
         public static void ArrestPed(Ped suspect)
         {
             if (suspect)
             {
-                Game.LogTrivial("Arrest Manager API arresting suspect.");
+                Game.LogTrivial("!!!!! ARREST MANAGER+ WARNING !!!!!");
+                Game.LogTrivial("Someone is calling deprecated API function ArrestPed");
+                Game.LogTrivial("This is not supported, and will be removed in the future!");
+                Game.DisplayNotification("~r~~h~ARREST MANAGER+ WARNING~w~~n~Deprecated API function ArrestPed is being called. Please notify the user plug-in author of the currently executing call-out, event or feature.");
                 PedManager.ArrestPed(suspect);
             }
         }
@@ -243,6 +242,5 @@ namespace Arrest_Manager.API
         {
             new Coroner(destination, radioAnimation).handleCoroner();
         }
-
     }
 }
