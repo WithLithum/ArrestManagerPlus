@@ -280,7 +280,7 @@ namespace Arrest_Manager
             });
         }
 
-        private static UIMenu menuPedManagement;
+        internal static UIMenu PedManagementMenu { get; private set; }
         private static UIMenuItem itemFollow;
         private static UIMenuItem itemGrab;
         private static UIMenuItem itemCallTaxi;
@@ -288,24 +288,24 @@ namespace Arrest_Manager
 
         public static void CreatePedManagementMenu()
         {
-            menuPedManagement = new UIMenu("Ped Manager", "");
+            PedManagementMenu = new UIMenu("Ped Manager", "");
             itemFollow = new UIMenuItem("Follow");
             itemGrab = new UIMenuItem("Grab");
             itemCallTaxi = new UIMenuItem("Call taxi");
             itemRequestCoroner = new UIMenuItem("Coroner", "Calls a coroner to deal with all nearby dead people.");
 
-            menuPedManagement.AddItem(SceneManager.MenuSwitchListItem);
-            menuPedManagement.AddItems(itemFollow, itemGrab, itemCallTaxi, itemRequestCoroner);
+            PedManagementMenu.AddItem(SceneManager.MenuSwitchListItem);
+            PedManagementMenu.AddItems(itemFollow, itemGrab, itemCallTaxi, itemRequestCoroner);
 
-            menuPedManagement.RefreshIndex();
-            menuPedManagement.MouseControlsEnabled = false;
-            menuPedManagement.AllowCameraMovement = true;
-            menuPedManagement.OnItemSelect += OnItemSelect;
+            PedManagementMenu.RefreshIndex();
+            PedManagementMenu.MouseControlsEnabled = false;
+            PedManagementMenu.AllowCameraMovement = true;
+            PedManagementMenu.OnItemSelect += OnItemSelect;
         }
 
         public static void OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
         {
-            if (sender != menuPedManagement) { return; }
+            if (sender != PedManagementMenu) { return; }
             Rage.Native.NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
             if (selectedItem == itemFollow)
             {
@@ -341,7 +341,7 @@ namespace Arrest_Manager
             {
                 
                 new Taxi().CallTaxi();
-                menuPedManagement.Visible = false;
+                PedManagementMenu.Visible = false;
                 //taxi
             }
             else if (selectedItem == itemRequestCoroner)

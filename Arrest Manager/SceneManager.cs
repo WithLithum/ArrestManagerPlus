@@ -330,7 +330,7 @@ namespace Arrest_Manager
         private static bool arrestBarDisplayTime = false;
 
         private static MenuPool _menuPool;
-        private static UIMenu ActiveMenu = menuPedManagement;
+        private static UIMenu ActiveMenu = PedManagementMenu;
         public static UIMenuListItem MenuSwitchListItem;
         public static void CreateMenus()
         {
@@ -342,8 +342,8 @@ namespace Arrest_Manager
             MenuSwitchListItem = new UIMenuListItem("Scene Management", "", menus);
             CreatePedManagementMenu();
             
-            _menuPool.Add(menuPedManagement);
-            menuPedManagement.OnListChange += OnListChange;
+            _menuPool.Add(PedManagementMenu);
+            PedManagementMenu.OnListChange += OnListChange;
             createVehicleManagementMenu();
             _menuPool.Add(VehicleManagementMenu);
             VehicleManagementMenu.OnListChange += OnListChange;
@@ -354,14 +354,14 @@ namespace Arrest_Manager
         public static void OnListChange(UIMenu sender, UIMenuListItem list, int index)
         {
             
-            if ((sender != menuPedManagement && sender != VehicleManagementMenu) || list != MenuSwitchListItem) { return; }
+            if ((sender != PedManagementMenu && sender != VehicleManagementMenu) || list != MenuSwitchListItem) { return; }
            
             string selectedmenustring = list.Collection[list.Index].ToString();
 
             UIMenu selectedmenu;
             if (selectedmenustring == "Ped Manager")
             {
-                selectedmenu = menuPedManagement;
+                selectedmenu = PedManagementMenu;
             }
             else
             {
@@ -399,7 +399,7 @@ namespace Arrest_Manager
                             }
                             else
                             {
-                                menuPedManagement.Visible = !menuPedManagement.Visible;
+                                PedManagementMenu.Visible = !PedManagementMenu.Visible;
 
                             }
 

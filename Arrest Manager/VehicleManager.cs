@@ -641,7 +641,7 @@ namespace Arrest_Manager
 
             if (selectedItem == callForTowTruckItem)
             {
-                Rage.Native.NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+                NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
                 new VehicleManager().TowVehicle();
                 VehicleManagementMenu.Visible = false;
             }

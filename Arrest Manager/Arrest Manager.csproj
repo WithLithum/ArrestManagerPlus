@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Arrest_Manager</RootNamespace>
-    <AssemblyName>Arrest Manager</AssemblyName>
+    <AssemblyName>ArrestManager+</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>
@@ -30,7 +30,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Debug\Arrest Manager.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\ArrestManager+.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -108,14 +108,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API\BetterEMSFuncs.cs" />
+    <Compile Include="API\BetterEmsFunctions.cs" />
     <Compile Include="API\ComputerPlusFuncs.cs" />
     <Compile Include="API\Functions.cs" />
     <Compile Include="API\LSPDFRPlusFuncs.cs" />
     <Compile Include="API\SmartRadioFuncs.cs" />
-    <Compile Include="API\VocalDispatchHelper.cs" />
     <Compile Include="Coroner.cs" />
-    <Compile Include="JailDropoff.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Jailer.cs" />
     <Compile Include="PedManager.cs" />
@@ -136,6 +134,11 @@
 
 copy /Y "$(TargetDir)$(ProjectName).pdb" "G:\Program Files\Rockstar Games\Grand Theft Auto V\Plugins\LSPDFR</PostBuildEvent>
   </PropertyGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties BuildVersion_StartDate="2000/1/1" BuildVersion_UpdateFileVersion="True" BuildVersion_UpdateAssemblyVersion="True" BuildVersion_BuildVersioningStyle="None.None.MonthAndDayStamp.TimeStamp" />
+    </VisualStudio>
+  </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
