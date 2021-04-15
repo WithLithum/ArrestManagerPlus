@@ -345,8 +345,8 @@ namespace Arrest_Manager
             _menuPool.Add(menuPedManagement);
             menuPedManagement.OnListChange += OnListChange;
             createVehicleManagementMenu();
-            _menuPool.Add(vehicleManagementMenu);
-            vehicleManagementMenu.OnListChange += OnListChange;
+            _menuPool.Add(VehicleManagementMenu);
+            VehicleManagementMenu.OnListChange += OnListChange;
             Game.FrameRender += Process;
             MainLogic();
 
@@ -354,7 +354,7 @@ namespace Arrest_Manager
         public static void OnListChange(UIMenu sender, UIMenuListItem list, int index)
         {
             
-            if ((sender != menuPedManagement && sender != vehicleManagementMenu) || list != MenuSwitchListItem) { return; }
+            if ((sender != menuPedManagement && sender != VehicleManagementMenu) || list != MenuSwitchListItem) { return; }
            
             string selectedmenustring = list.Collection[list.Index].ToString();
 
@@ -365,7 +365,7 @@ namespace Arrest_Manager
             }
             else
             {
-                selectedmenu = vehicleManagementMenu;
+                selectedmenu = VehicleManagementMenu;
             }
             if (selectedmenu != sender)
             {

@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Arrest_Manager
 {
     using LSPD_First_Response.Mod.API;
     using Rage;
-    using System.IO;
     using System.Reflection;
-    using System.Windows.Forms;
 
     internal class Main : Plugin
     {
@@ -37,27 +30,26 @@ namespace Arrest_Manager
             Functions.OnOnDutyStateChanged += Functions_OnOnDutyStateChanged;
 
         }
-        internal static Version Albo1125CommonVer = new Version("6.6.3.0");
-        internal static Version MadeForGTAVersion = new Version("1.0.1604.1");
-        internal static float MinimumRPHVersion = 0.51f;
-        internal static string[] AudioFilesToCheckFor = new string[] { "LSPDFR/audio/scanner/Arrest Manager Audio/Camera.wav" };
-        internal static Version RAGENativeUIVersion = new Version("1.6.3.0");
-        internal static Version MadeForLSPDFRVersion = new Version("0.4.2");
-        internal static string[] OtherFilesToCheckFor = new string[] { };
+        internal static readonly Version Albo1125CommonVer = new Version("6.6.3.0");
+        internal static readonly Version MadeForGTAVersion = new Version("1.0.1604.1");
+        internal static readonly float MinimumRPHVersion = 0.51f;
+        internal static readonly string[] AudioFilesToCheckFor = new string[] { "LSPDFR/audio/scanner/Arrest Manager Audio/Camera.wav" };
+        internal static readonly Version RAGENativeUIVersion = new Version("1.6.3.0");
+        internal static readonly Version MadeForLSPDFRVersion = new Version("0.4.8");
+        internal static readonly string[] OtherFilesToCheckFor = new string[] { };
 
-        internal static string FileID = "8107";
-        internal static string DownloadURL = "http://bit.ly/ArrestManager42";
-        internal static string PluginName = "Arrest Manager";
-        internal static string Path = "Plugins/LSPDFR/Arrest Manager.dll";
+        internal static readonly string FileID = "8107";
+#pragma warning disable S1075 // URIs should not be hardcoded
+        internal static readonly string DownloadURL = "https://github.com/RelaperCrystal/Arrest-Manager";
+#pragma warning restore S1075 // URIs should not be hardcoded
+        internal static readonly string PluginName = "Arrest Manager";
+        internal static readonly string Path = "Plugins/LSPDFR/Arrest Manager.dll";
 
         public static void Functions_OnOnDutyStateChanged(bool onDuty)
         {
-            if (onDuty)
+            if (onDuty && Albo1125.Common.DependencyChecker.DependencyCheckMain(PluginName, Albo1125CommonVer, MinimumRPHVersion, MadeForGTAVersion, MadeForLSPDFRVersion, RAGENativeUIVersion, AudioFilesToCheckFor, OtherFilesToCheckFor))
             {
-                if (Albo1125.Common.DependencyChecker.DependencyCheckMain(PluginName, Albo1125CommonVer, MinimumRPHVersion, MadeForGTAVersion, MadeForLSPDFRVersion, RAGENativeUIVersion, AudioFilesToCheckFor, OtherFilesToCheckFor))
-                {
-                    EntryPoint.Initialize();
-                }
+                EntryPoint.Initialize();
             }
         }
     }

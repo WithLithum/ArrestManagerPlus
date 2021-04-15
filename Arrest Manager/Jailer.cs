@@ -202,7 +202,7 @@ namespace Arrest_Manager
                 string Towtruckcolor = InitializeFile().ReadString("Misc", "TowTruckColourOverride", "");
                 if (!string.IsNullOrWhiteSpace(Towtruckcolor))
                 {
-                    VehicleManager.TowTruckColour = System.Drawing.Color.FromName(Towtruckcolor);
+                    VehicleManager.TowTruckColor = System.Drawing.Color.FromName(Towtruckcolor);
                     VehicleManager.OverrideTowTruckColour = true;
                 }
                 VehicleManager.TowtruckModel = InitializeFile().ReadString("Misc", "TowTruckModel", "TOWTRUCK");
