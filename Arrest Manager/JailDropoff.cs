@@ -10,6 +10,7 @@ using System.Xml.Serialization;
 
 namespace Arrest_Manager
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S1104:Fields should not have public accessibility")]
     public class JailDropoff
     {
         [XmlIgnore]
@@ -23,13 +24,44 @@ namespace Arrest_Manager
         [XmlIgnore]
         public Blip blip;
 
+        /// <summary>
+        /// The x component of the vector.
+        /// </summary>
         public float X;
+
+        /// <summary>
+        /// The y component of the vector.
+        /// </summary>
         public float Y;
+
+        /// <summary>
+        /// The z component of the vector.
+        /// </summary>
         public float Z;
+
+        /// <summary>
+        /// The heading.
+        /// </summary>
         public float Heading;
+
+        /// <summary>
+        /// Whether this drop-off has cells.
+        /// </summary>
         public bool HasCells;
+
+        /// <summary>
+        /// Whether this drop-off has officer cut-scene.
+        /// </summary>
         public bool OfficerCutscene;
+
+        /// <summary>
+        /// Whether this drop-off is available to ground vehicles.
+        /// </summary>
         public bool GroundVehicles;
+
+        /// <summary>
+        /// Whether this drop-off is available to air vehicles.
+        /// </summary>
         public bool AirVehicles;
         public bool WaterVehicles;
         public bool AIDropoff;

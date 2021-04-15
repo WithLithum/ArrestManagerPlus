@@ -3117,11 +3117,6 @@ namespace Arrest_Manager
                     API.SmartRadioFuncs.AddActionToButton(VehicleManager.SmartRadioTow, "tow");
                     API.SmartRadioFuncs.AddActionToButton(API.SmartRadioFuncs.RequestTransport, canTransportBeCalled, "transport");
                 }
-                if (IsLSPDFRPluginRunning("VocalDispatch", new Version("1.6.0.0")))
-                {
-                    API.VocalDispatchHelper vc_coroner = new API.VocalDispatchHelper();
-                    vc_coroner.SetupVocalDispatchAPI("ArrestManager.Coroner", new API.VocalDispatchHelper.VocalDispatchEventDelegate(Coroner.vc_main));
-                }
                 messageReceived = false;
                 transportMessageReceived = false;
                 jailRouteMessageReceived = false;

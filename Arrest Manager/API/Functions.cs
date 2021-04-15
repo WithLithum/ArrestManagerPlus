@@ -5,10 +5,15 @@ using Rage;
 
 namespace Arrest_Manager.API
 {
-    public delegate void PedEvent(Ped ped);
+    /// <summary>
+    /// Handles a single ped.
+    /// </summary>
+    /// <param name="ped">The ped.</param>
+    public delegate void SinglePedEventHandler(Ped ped);
+
+    /// <summary>Provides API functions.</summary>
     public static class Functions
     {
-
         /// <summary>
         /// Request transport for the specified suspect. Returns a bool indicating whether requesting transport was successful.
         /// </summary>
@@ -35,23 +40,14 @@ namespace Arrest_Manager.API
         {
             if (EntryPoint.canChoose && EntryPoint.suspectAPI != null && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.suspectAPI) && !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.suspectAPI))
             {
-                if (EntryPoint.twoSuspectsApi.Count == 2 && !ExtensionMethods.IsPointOnWater(Game.LocalPlayer.Character.Position))
-                {
-
-                    if (EntryPoint.twoSuspectsApi[0].Exists() && EntryPoint.twoSuspectsApi[1].Exists() && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.twoSuspectsApi[0]) &&
+                if (EntryPoint.twoSuspectsApi.Count == 2 && !ExtensionMethods.IsPointOnWater(Game.LocalPlayer.Character.Position) && EntryPoint.twoSuspectsApi[0].Exists() && EntryPoint.twoSuspectsApi[1].Exists() && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.twoSuspectsApi[0]) &&
                         EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.twoSuspectsApi[1]) && !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.twoSuspectsApi[0]) &&
-                            !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.twoSuspectsApi[1]))
-                    {
-
-                        if (Vector3.Distance(EntryPoint.twoSuspectsApi[0].Position, EntryPoint.twoSuspectsApi[1].Position) < 25f)
-                        {
-                            Game.LogTrivial("API detected multi transport - calling");
-                            EntryPoint.TransportMenu.Visible = true;
-                            EntryPoint.TransportMenu.CurrentSelection = 2;
-                            return true;
-
-                        }
-                    }
+                            !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.twoSuspectsApi[1]) && Vector3.Distance(EntryPoint.twoSuspectsApi[0].Position, EntryPoint.twoSuspectsApi[1].Position) < 25f)
+                {
+                    Game.LogTrivial("API detected multi transport - calling");
+                    EntryPoint.TransportMenu.Visible = true;
+                    EntryPoint.TransportMenu.CurrentSelection = 2;
+                    return true;
                 }
 
                 EntryPoint.canChoose = false;
@@ -105,7 +101,6 @@ namespace Arrest_Manager.API
                 }
                 else
                 {
-
                     return false;
                 }
             }
@@ -146,7 +141,7 @@ namespace Arrest_Manager.API
         /// <summary>
         /// Raised whenever the player arrests a ped. Only raised once per arrested ped.
         /// </summary>
-        public static event PedEvent PlayerArrestedPed;
+        public static event SinglePedEventHandler PlayerArrestedPed;
 
         internal static void OnPlayerArrestedPed(Ped ped)
         {
@@ -156,7 +151,7 @@ namespace Arrest_Manager.API
         /// <summary>
         /// Raised whenever the player grabs a ped.
         /// </summary>
-        public static event PedEvent PlayerGrabbedPed;
+        public static event SinglePedEventHandler PlayerGrabbedPed;
 
         internal static void OnPlayerGrabbedPed(Ped ped)
         {

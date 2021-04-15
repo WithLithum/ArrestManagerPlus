@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Media;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Arrest_Manager
@@ -31,7 +29,7 @@ namespace Arrest_Manager
 
         public static bool CanBeCalled(Vector3 destination)
         {
-            return getNearbyDeadPeds(destination).Count != 0;
+            return GetNearbyDeadPeds(destination).Count != 0;
         }
 
         public static bool CanBeCalled()
@@ -39,24 +37,24 @@ namespace Arrest_Manager
             return CanBeCalled(Game.LocalPlayer.Character.Position);
         }
 
+#pragma warning disable S4210 // Windows Forms entry points should be marked with STAThread
         public static void Main()
+#pragma warning restore S4210 // Windows Forms entry points should be marked with STAThread
         {
-
-            if (getNearbyDeadPeds(Game.LocalPlayer.Character.Position).Count == 0) { Game.DisplaySubtitle("No nearby dead people were found, sorry!"); return; }
+            if (GetNearbyDeadPeds(Game.LocalPlayer.Character.Position).Count == 0) { Game.DisplaySubtitle("No nearby dead people were found, sorry!"); return; }
             new Coroner(Game.LocalPlayer.Character.Position).handleCoroner();
         }
 
-        public static bool vc_main() { smartRadioMain(); return true; }
         public static void smartRadioMain()
         {
-            if (getNearbyDeadPeds(Game.LocalPlayer.Character.Position).Count == 0) { Game.DisplaySubtitle("No nearby dead people were found, sorry!"); return; }
+            if (GetNearbyDeadPeds(Game.LocalPlayer.Character.Position).Count == 0) { Game.DisplaySubtitle("No nearby dead people were found, sorry!"); return; }
             new Coroner(Game.LocalPlayer.Character.Position, false).handleCoroner();
         }
 
         public Coroner(Vector3 destination, bool anims = true)
         {
             this.destination = destination;
-            this.deadBodies = getNearbyDeadPeds(destination);
+            this.deadBodies = GetNearbyDeadPeds(destination);
             this.anims = anims;
         }
 
@@ -74,23 +72,19 @@ namespace Arrest_Manager
                     while (true)
                     {
                         SceneManager.GetSpawnPoint(destination, out SpawnPoint, out Heading, UseSpecialID);
-                        travelDistance = Rage.Native.NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, destination.X, destination.Y, destination.Z);
+                        travelDistance = NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, destination.X, destination.Y, destination.Z);
                         waitCount++;
-                        if (Vector3.Distance(destination, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f)
+                        if (Vector3.Distance(destination, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f && travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
                         {
 
-                            if (travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
+                            Vector3 directionFromVehicleToPed1 = (destination - SpawnPoint);
+                            directionFromVehicleToPed1.Normalize();
+
+                            float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
+
+                            if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
                             {
-
-                                Vector3 directionFromVehicleToPed1 = (destination - SpawnPoint);
-                                directionFromVehicleToPed1.Normalize();
-
-                                float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
-
-                                if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
-                                {
-                                    break;
-                                }
+                                break;
                             }
                         }
                         if (waitCount >= 400)
@@ -142,14 +136,14 @@ namespace Arrest_Manager
                         {
                             if (body.Exists() && !bodiesBeingHandled.Contains(body))
                             {
-                                dealWithBody(body);
+                                DealWithBody(body);
                             }
                             else
                             {
                                 deadBodies.Remove(body);
                             }
                         }
-                        deadBodies.AddRange(getNearbyDeadPeds(driver.Position));
+                        deadBodies.AddRange(GetNearbyDeadPeds(driver.Position));
                     }
                     LeaveScene();
                 }
@@ -188,100 +182,81 @@ namespace Arrest_Manager
             int randomRoll = EntryPoint.rnd.Next(1, 23);
 
             string msg = "";
-            if (randomRoll == 1)
+            switch (randomRoll)
             {
-                msg = "All done here - I wonder if FinKone'll ever touch some code again.";
+                case 1:
+                    msg = "All done here - I wonder if FinKone'll ever touch some code again.";
+                    break;
+                case 2:
+                    msg = "Let's roll, we've got another call. Los Santos never stops!";
+                    break;
+                case 3:
+                    msg = "This is not nearly as bad as the last call, the poor guy was stuck in a toilet.";
+                    break;
+                case 4:
+                    msg = "I love the vanilla experience with this toolkit. Bejoljo's toolkit is just gone too much.";
+                    break;
+                case 5:
+                    msg = "Albo1125 shouldn't promote himself like this. It's disgusting...";
+                    break;
+                case 6:
+                    msg = "All I need now is a holiday to the PNW parks.";
+                    break;
+                case 7:
+                    msg = "It's a bloody shame this had to happen.";
+                    break;
+                case 8:
+                    msg = "I'm feeling hungry now. Let's get a bite to eat.";
+                    break;
+                case 9:
+                    msg = "It is so sad that Albo1125 will now only work for role-plays for nonsense.";
+                    break;
+                case 10:
+                    msg = "Can you believe you aren't using Albo1125's Arrest Manager?";
+                    break;
+                case 11:
+                    msg = "I'm done once they have these young buddies with those fancy EUP clothes appears on this job.";
+                    break;
+                case 12:
+                    msg = "It's back to watching San Andreas's CCTV stream now, then.";
+                    break;
+                case 13:
+                    msg = "I heard dinosaurs are back. Apparently they've evolved and are now fit to moderate forums.";
+                    break;
+                case 14:
+                    msg = "I like how people remained calm there. I wonder how they learned to stop shitting bricks...";
+                    break;
+                case 15:
+                    msg = "With these budget cuts my only contact method will soon be LSCoroner@Idontcare.com...";
+                    break;
+                case 16:
+                    msg = "Heard about the new glasses they're selling? Apparently they make visuals great again.";
+                    break;
+                case 17:
+                    msg = "I hope these medics don't get any better or we'll be out of a job!";
+                    break;
+                case 18:
+                    msg = "These new emergency lights the police are using are so damn bright.";
+                    break;
+                case 19:
+                    msg = "Could've been worse. I got a call in the ocean once, had to swim a mile!";
+                    break;
+                case 20:
+                    msg = "My stupidest call was the rednecks who blew themselves up fishing with grenades.";
+                    break;
+                case 21:
+                    msg = "This still doesn't top the guy who somehow electrocuted himself with a toaster.";
+                    break;
+                case 22:
+                    msg = "Can you believe the coast guard dispatched me once for a dead whale? It doesn't even fit!";
+                    break;
             }
-            else if (randomRoll == 2)
-            {
-                msg = "Let's roll, we've got another call. Los Santos never stops!";
-            }
-            else if (randomRoll == 3)
-            {
-                msg = "This is not nearly as bad as the last call, the poor guy was stuck in a toilet.";
-            }
-            else if (randomRoll == 4)
-            {
-                msg = "I hope Albo1125 uploaded another video today... let's go check!";
-            }
-            else if (randomRoll == 5)
-            {
-                msg = "Albo1125 shouldn't promote himself like this. It's disgusting...";
-            }
-            else if (randomRoll == 6)
-            {
-                msg = "All I need now is a holiday to the PNW parks. Sheesh.";
-            }
-            else if (randomRoll == 7)
-            {
-                msg = "It's a bloody shame this had to happen.";
-            }
-            else if (randomRoll == 8)
-            {
-                msg = "I'm feeling hungry now. Let's get a bite to eat.";
-            }
-            else if (randomRoll == 9)
-            {
-                msg = "I heard Albo1125 updated his mods again - my bandwidth is starting to run out!";
-            }
-            else if (randomRoll == 10)
-            {
-                msg = "Our detectives seem to think it's like LS Noire sim over here. We're so damn busy!";
-            }
-            else if (randomRoll == 11)
-            {
-                msg = "I'm getting too old for this job. I'm joining the Old Age Pensioner club for sure.";
-            }
-            else if (randomRoll == 12)
-            {
-                msg = "It's back to watching San Andreas's CCTV stream now, then.";
-            }
-            else if (randomRoll == 13)
-            {
-                msg = "I heard dinosaurs are back. Apparently they've evolved and are now fit to moderate forums.";
-            }
-            else if (randomRoll == 14)
-            {
-                msg = "I like how people remained calm there. I wonder how they learned to stop shitting bricks...";
-            }
-            else if (randomRoll == 15)
-            {
-                msg = "With these budget cuts my only contact method will soon be LSCoroner@Idontcare.com...";
-            }
-            else if (randomRoll == 16)
-            {
-                msg = "Heard about the new glasses they're selling? Apparently they make visuals great again.";
-            }
-            else if (randomRoll == 17)
-            {
-                msg = "I hope these medics don't get any better or we'll be out of a job!";
-            }
-            else if (randomRoll == 18)
-            {
-                msg = "These new emergency lights the police are using are so damn bright.";
-            }
-            else if (randomRoll == 19)
-            {
-                msg = "Could've been worse. I got a call in the ocean once, had to swim a mile!";
-            }
-            else if (randomRoll == 20)
-            {
-                msg = "My stupidest call was the rednecks who blew themselves up fishing with grenades.";
-            }
-            else if (randomRoll == 21)
-            {
-                msg = "This still doesn't top the guy who somehow electrocuted himself with a toaster.";
-            }
-            else if (randomRoll == 22)
-            {
-                msg = "Can you believe the coast guard dispatched me once for a dead whale? It doesn't even fit!";
-            }
-
 
             if (driver.Exists() && Vector3.Distance(driver.Position, Game.LocalPlayer.Character.Position) < 60f)
             {
-                Game.DisplaySubtitle("~b~Driver: " + msg, 7000);
+                Game.DisplaySubtitle("~b~Driver~w~: " + msg, 7000);
             }
+
             passenger.Tasks.FollowNavigationMeshToPosition(coronerVeh.GetOffsetPositionRight(2), coronerVeh.Heading, 1.7f);
             driver.Tasks.FollowNavigationMeshToPosition(coronerVeh.GetOffsetPositionRight(-2), coronerVeh.Heading, 1.7f).WaitForCompletion(8000);
             passenger.Tasks.EnterVehicle(coronerVeh, 7000, 0);
@@ -294,7 +269,7 @@ namespace Arrest_Manager
             coronerVeh.Dismiss();
         }
 
-        private void dealWithBody(Ped body)
+        private void DealWithBody(Ped body)
         {
             bodiesBeingHandled.Add(body);
             passenger.Tasks.GoToOffsetFromEntity(body, 10000, -2.0f, -1.0f, 8.0f);
@@ -308,25 +283,24 @@ namespace Arrest_Manager
                 camera.IsPositionFrozen = true;
 
                 Vector3 dirVect = body.Position - driver.Position;
-                Vector3 offsetPos = driver.GetOffsetPosition(Vector3.RelativeFront * 1.4f + Vector3.RelativeBottom * 1.5f);
                 dirVect.Normalize();
 
                 GameFiber.Wait(900);
-                Rage.Native.NativeFunction.Natives.DRAW_SPOT_LIGHT(driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).X, driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).Y,
+                NativeFunction.Natives.DRAW_SPOT_LIGHT(driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).X, driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).Y,
                     driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).Z, dirVect.X, dirVect.Y, dirVect.Z, 100, 100, 100, 90.0f, 50.0f, 90.0f, 80.0f, 90.0f);
                 cameraSound.Play();
                 GameFiber.Wait(1500);
-                Rage.Native.NativeFunction.Natives.DRAW_SPOT_LIGHT(driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).X, driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).Y,
+                NativeFunction.Natives.DRAW_SPOT_LIGHT(driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).X, driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).Y,
                     driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).Z, dirVect.X, dirVect.Y, dirVect.Z, 100, 100, 100, 90.0f, 50.0f, 90.0f, 80.0f, 90.0f);
                 cameraSound.Play();
                 GameFiber.Wait(1500);
-                Rage.Native.NativeFunction.Natives.DRAW_SPOT_LIGHT(driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).X, driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).Y,
+                NativeFunction.Natives.DRAW_SPOT_LIGHT(driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).X, driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).Y,
                     driver.GetOffsetPosition(Vector3.RelativeFront * 0.5f).Z, dirVect.X, dirVect.Y, dirVect.Z, 100, 100, 100, 90.0f, 50.0f, 90.0f, 80.0f, 90.0f);
                 cameraSound.Play();
 
                 GameFiber.Wait(1000);
                 camera.Delete();
-                Game.DisplaySubtitle("~b~Driver: I've got enough pictures, I'll time stamp them.", 4000);
+                Game.DisplaySubtitle("~b~Driver~w~: I've got enough pictures, I'll time stamp them.", 4000);
 
                 passenger.Tasks.PlayAnimation("amb@medic@standing@tendtodead@enter", "enter", 8.0F, AnimationFlags.None);
                 GameFiber.Wait(1000);
@@ -337,7 +311,7 @@ namespace Arrest_Manager
             }
 
 
-            Game.DisplaySubtitle("~b~Passenger: " + causeOfDeathSpeech() + determineCauseOfDeath(body) + "~b~.", 6000);
+            Game.DisplaySubtitle("~b~Passenger~w~: " + GetCauseOfDeathPrelude() + GetCauseOfDeathString(body) + "~b~.", 6000);
             if (body.Exists())
             {
                 if (deadBodies.Contains(body))
@@ -352,7 +326,10 @@ namespace Arrest_Manager
 
                 if (!body.IsInAnyVehicle(true))
                 {
-                    bodyBags.Add(new Rage.Object("prop_ld_binbag_01", body.Position));
+                    bodyBags.Add(new Rage.Object("xm_prop_body_bag", body.Position)
+                    {
+                        IsPositionFrozen = false,
+                    });
 
                 }
                 if (body.Exists())
@@ -364,28 +341,23 @@ namespace Arrest_Manager
             
         }
 
-        private static string causeOfDeathSpeech()
+        private static string GetCauseOfDeathPrelude()
         {
-            int roll = EntryPoint.rnd.Next(3);
-            if (roll == 0)
+            switch (EntryPoint.rnd.Next(3))
             {
-                return "Hm, cause of death appears to be from ~r~";
-            }
-            else if (roll == 1)
-            {
-                return "Seems the cause of death on this one was ~r~";
-            }
-            else
-            {
-                return "This one appears to have died from ~r~";
+                case 0:
+                    return "It seems like this one died from ~r~";
+                case 1:
+                    return "Seems the cause of death on this one was ~r~";
+                default:
+                    return "This one appears to have died from ~r~";
             }
         }
 
-        private static uint[] bluntForceObjects = new uint[] { 0x678B81B1, 0x4E875F73, 0x958A4A8F, 0x440E4788, 0x84BD7BFD };
-        private static string determineCauseOfDeath(Ped body)
+        private static string GetCauseOfDeathString(Ped body)
         {
-            Model causeModel = Rage.Native.NativeFunction.Natives.GET_PED_CAUSE_OF_DEATH<Model>(body);
-            uint cause = EntryPoint.IsLSPDFRPluginRunning("BetterEMS", new Version("3.0.0.0")) && API.BetterEMSFuncs.HasBeenTreated(body) ? API.BetterEMSFuncs.GetOriginalDeathWeaponAssetHash(body) : causeModel.Hash;
+            var causeModel = NativeFunction.Natives.GET_PED_CAUSE_OF_DEATH<Model>(body);
+            var cause = EntryPoint.IsLSPDFRPluginRunning("BetterEMS", new Version("3.0.0.0")) && API.BetterEMSFuncs.HasBeenTreated(body) ? API.BetterEMSFuncs.GetOriginalDeathWeaponAssetHash(body) : causeModel.Hash;
             if (causeModel.IsVehicle || cause == 0x07FC7D7A || cause == 0xA36D413E)
             {
                 return "a collision with a vehicle";
@@ -418,24 +390,13 @@ namespace Arrest_Manager
             {
                 return "a wound bleeding out";
             }
-            else if (cause == 0x8B7333FB)
-            {
-                return "a wound bleeding out";
-            }
-            else if (bluntForceObjects.Contains(cause))
-            {
-                return "a blunt force weapon";
-            }
             else
             {
-                return "a firearm";
+                return "a weapon";
             }
-
         }
 
-
-
-        private static List<Ped> getNearbyDeadPeds(Vector3 pos, float radius = 35)
+        private static List<Ped> GetNearbyDeadPeds(Vector3 pos, float radius = 35)
         {
             List<Ped> nearbyDeads = new List<Ped>();
             foreach (Ped ped in World.EnumeratePeds())
@@ -501,54 +462,42 @@ namespace Arrest_Manager
                 {
                     Game.DisplayHelp("Service taking too long? Hold down ~b~" + EntryPoint.kc.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
                 }
-                //If van isn't moving
 
-                if (veh.Speed < 0.2f)
-                {
-                    //    driver.Tasks.PerformDrivingManeuver(veh, VehicleManeuver.ReverseStraight, 700).WaitForCompletion();
-                    //    drivingLoopCount += 2;
-                    //    driver.Tasks.DriveToPosition(pos, MathHelper.ConvertKilometersPerHourToMetersPerSecond(60f), VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians).WaitForCompletion(100);
-                }
                 if (veh.Speed < 2f)
                 {
                     drivingLoopCount++;
                 }
                 //if van is very far away
-                if ((Vector3.Distance(pos, veh.Position) > EntryPoint.SceneManagementSpawnDistance + 70f))
+                if (Vector3.Distance(pos, veh.Position) > EntryPoint.SceneManagementSpawnDistance + 70f)
                 {
                     drivingLoopCount++;
                 }
                 //If Van is stuck, relocate it
 
-                if ((drivingLoopCount >= 33 && drivingLoopCount <= 38) && EntryPoint.AllowWarping)
+                if (drivingLoopCount >= 33 && drivingLoopCount <= 38 && EntryPoint.AllowWarping)
                 {
-                    //Vector3 tempspawn = World.GetNextPositionOnStreet(suspect.Position.Around(transportSpawnDistance));
                     Vector3 SpawnPoint;
                     float Heading;
                     bool UseSpecialID = true;
-                    //GetTransportVanSpawnPoint(suspect.Position, out SpawnPoint, out Heading);
+
                     float travelDistance;
                     int WaitCount = 0;
                     while (true)
                     {
                         SceneManager.GetSpawnPoint(pos, out SpawnPoint, out Heading, UseSpecialID);
-                        travelDistance = Rage.Native.NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, playerPed.Position.X, playerPed.Position.Y, playerPed.Position.Z);
+                        travelDistance = NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, playerPed.Position.X, playerPed.Position.Y, playerPed.Position.Z);
 
-                        if (Vector3.Distance(playerPed.Position, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f)
+                        if (Vector3.Distance(playerPed.Position, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f && travelDistance < EntryPoint.SceneManagementSpawnDistance * 4.5f)
                         {
+                            Vector3 directionFromVehicleToPed1 = (Game.LocalPlayer.Character.Position - SpawnPoint);
+                            directionFromVehicleToPed1.Normalize();
 
-                            if (travelDistance < EntryPoint.SceneManagementSpawnDistance * 4.5f)
+                            float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
+
+                            if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
                             {
-                                Vector3 directionFromVehicleToPed1 = (Game.LocalPlayer.Character.Position - SpawnPoint);
-                                directionFromVehicleToPed1.Normalize();
 
-                                float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
-
-                                if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
-                                {
-
-                                    break;
-                                }
+                                break;
                             }
                         }
                         WaitCount++;
@@ -559,19 +508,12 @@ namespace Arrest_Manager
 
                         GameFiber.Yield();
                     }
-                    //float travelDistance = Rage.Native.NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>( SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, playerPed.Position.X, playerPed.Position.Y, playerPed.Position.Z);
 
                     Game.Console.Print("Relocating because van was stuck...");
                     veh.Position = SpawnPoint;
-                    //Vector3 directionFromVehicleToPed = (suspect.Position - SpawnPoint);
-                    //directionFromVehicleToPed.Normalize();
-
-                    //float vehicleHeading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed);
                     veh.Heading = Heading;
                     drivingLoopCount = 39;
                     Game.DisplayHelp("Transport taking too long? Hold down ~b~" + EntryPoint.kc.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
-
-
                 }
                 // if van is stuck for a 2nd time or takes too long, spawn it very near to the suspect
                 else if (((drivingLoopCount >= 70 || waitCount >= 110) && EntryPoint.AllowWarping) || forceCloseSpawn)
@@ -609,22 +551,16 @@ namespace Arrest_Manager
             Game.HideHelp();
             while ((Vector3.Distance(pos, veh.Position) > 18f) && !transportVanTeleported)
             {
-                Rage.Task parkNearSuspect = driver.Tasks.DriveToPosition(pos, 6f, VehicleDrivingFlags.FollowTraffic | VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians);
+                var parkNearSuspect = driver.Tasks.DriveToPosition(pos, 6f, VehicleDrivingFlags.FollowTraffic | VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians);
                 parkNearSuspect.WaitForCompletion(800);
                 transportVanTeleported = false;
                 if (Vector3.Distance(pos, veh.Position) > 80f)
                 {
-                    Vector3 SpawnPoint = World.GetNextPositionOnStreet(pos.Around2D(12f));
-                    veh.Position = SpawnPoint;
+                    veh.Position = World.GetNextPositionOnStreet(pos.Around2D(12f));
                 }
 
             }
             GameFiber.Wait(600);
-
-
-
         }
-
-
     }
 }
