@@ -19,16 +19,10 @@ namespace Arrest_Manager.API
         /// </summary>
         /// <param name="suspect">The ped to be transported. Does not necessarily have to be arrested.</param>
         /// <returns>Returns a bool indicating whether requesting transport was successful.</returns>
+        [Obsolete("TRANSPORT DEPRECATED")]
         public static bool RequestTransport(Ped suspect)
         {
-            Game.LogTrivial("Requesting transport for specific suspect - API");
-            if (!EntryPoint.suspectsPendingTransport.Contains(suspect) && suspect)
-            {
-                EntryPoint.canChoose = false;
-                EntryPoint.SuspectTransporterNewOfficer(suspect);
-                return true;
-            }
-            Game.LogTrivial("Suspect already pending transport or does not exist. Aborting. API");
+            RequestTransport();
             return false;
         }
 
@@ -36,48 +30,13 @@ namespace Arrest_Manager.API
         /// Request transport for the nearest suspect that has transport on standby. If multiple suspects are available, requests multi transport automatically. Returns a bool indicating whether requesting transport was successful.
         /// </summary>
         /// <returns>Returns a bool indicating whether requesting transport was successful.</returns>
+        [Obsolete("TRANSPORT FEATURE DROPPED")]
         public static bool RequestTransport()
         {
-            if (EntryPoint.canChoose && EntryPoint.suspectAPI != null && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.suspectAPI) && !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.suspectAPI))
-            {
-                if (EntryPoint.twoSuspectsApi.Count == 2 && !ExtensionMethods.IsPointOnWater(Game.LocalPlayer.Character.Position) && EntryPoint.twoSuspectsApi[0].Exists() && EntryPoint.twoSuspectsApi[1].Exists() && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.twoSuspectsApi[0]) &&
-                        EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.twoSuspectsApi[1]) && !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.twoSuspectsApi[0]) &&
-                            !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.twoSuspectsApi[1]) && Vector3.Distance(EntryPoint.twoSuspectsApi[0].Position, EntryPoint.twoSuspectsApi[1].Position) < 25f)
-                {
-                    Game.LogTrivial("API detected multi transport - calling");
-                    EntryPoint.TransportMenu.Visible = true;
-                    EntryPoint.TransportMenu.CurrentSelection = 2;
-                    return true;
-                }
-
-                EntryPoint.canChoose = false;
-                Game.LogTrivial("API detected single transport - calling");
-                Game.RemoveNotification(EntryPoint.multiVanOnStandbyMsg);
-                Game.RemoveNotification(EntryPoint.vanOnStandbyMsg);
-                Ped officer;
-                Vehicle van;
-                if (EntryPoint.RecruitNearbyOfficer(out officer, out van))
-                {
-                    Game.LogTrivial("Recruited Officer");
-                    EntryPoint.SuspectTransporterRecruitedOfficer(officer, van);
-                }
-                else if (ExtensionMethods.IsPointOnWater(Game.LocalPlayer.Character.Position))
-                {
-                    Game.LogTrivial("API detected boat transport.");
-                    EntryPoint.BoatTransport();
-                }
-                else
-                {
-                    EntryPoint.SuspectTransporterNewOfficer();
-                }
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-
+            Game.LogTrivial("AM+: WARNING - Transport has been DEPRECATED");
+            Game.DisplayNotification("~r~~h~ARREST MANAGER+ WARNING~n~~w~Police transport feature is deprecated - please contact your call-out/event/feature author to remove call to the transport, use LSPDFR instead");
             
+            return false;
         }
 
         /// <summary>
@@ -86,28 +45,11 @@ namespace Arrest_Manager.API
         /// <param name="Cop">Cop to drive the pickup vehicle.</param>
         /// <param name="PoliceTransportVehicle">Pickup vehicle to be driven by the cop.</param>
         /// <returns>Returns a bool indicating whether requesting transport was successful.</returns>
+        [Obsolete("TRANSPORT DEPRECATED")]
         public static bool RequestTransport(Ped Cop, Vehicle PoliceTransportVehicle)
         {
-            if (Cop.Exists() && PoliceTransportVehicle.Exists() && EntryPoint.canChoose && EntryPoint.suspectAPI != null && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.suspectAPI) && !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.suspectAPI))
-            {
-                if (PoliceTransportVehicle.IsPoliceVehicle && PoliceTransportVehicle.FreePassengerSeatsCount > 1 && PoliceTransportVehicle.GetDoors().Length > 4)
-                {
-                    EntryPoint.canChoose = false;
-                    Game.RemoveNotification(EntryPoint.multiVanOnStandbyMsg);
-                    Game.RemoveNotification(EntryPoint.vanOnStandbyMsg);
-                    Game.LogTrivial("Arrest Manager API requesting custom officer/vehicle.");
-                    EntryPoint.SuspectTransporterRecruitedOfficer(Cop, PoliceTransportVehicle);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
+            RequestTransport();
+            return false;
         }
 
 
@@ -118,7 +60,7 @@ namespace Arrest_Manager.API
         /// <param name="PlayAnims">Determines whether the player performs the radio animation or not.</param>
         public static void RequestTowTruck(Vehicle VehicleToTow, bool PlayAnims = true)
         {
-            new VehicleManager().towVehicle(VehicleToTow, PlayAnims);
+            new VehicleManager().TowVehicle(VehicleToTow, PlayAnims);
         }
 
         /// <summary>
@@ -135,7 +77,7 @@ namespace Arrest_Manager.API
         /// </summary>
         public static void RequestInsurancePickupForNearbyVehicle()
         {
-            new VehicleManager().insurancePickUp();
+            new VehicleManager().RequestInsurance();
         }
 
         /// <summary>

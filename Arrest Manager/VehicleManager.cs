@@ -103,10 +103,10 @@ namespace Arrest_Manager
                 Game.DisplayNotification("Unfortunately, this vehicle can't be towed or impounded.");
                 return;
             }
-            towVehicle(towingCar, playanims);
+            TowVehicle(towingCar, playanims);
         }
         
-        internal void towVehicle(Vehicle car, bool playanims = true)
+        internal void TowVehicle(Vehicle car, bool playanims = true)
         {
 
             GameFiber.StartNew(delegate
@@ -458,7 +458,7 @@ namespace Arrest_Manager
         private Blip businesscarblip;
         private Ped passenger;
         private Vehicle businessCar;
-        internal void insurancePickUp()
+        internal void RequestInsurance()
         {
 
             GameFiber.StartNew(delegate
@@ -683,7 +683,7 @@ namespace Arrest_Manager
             else if (selectedItem == callForInsuranceItem)
             {
                 Rage.Native.NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
-                new VehicleManager().insurancePickUp();
+                new VehicleManager().RequestInsurance();
                 vehicleManagementMenu.Visible = false;
             }
         }

@@ -56,7 +56,7 @@ namespace Arrest_Manager
             {
                 if (Albo1125.Common.DependencyChecker.DependencyCheckMain(PluginName, Albo1125CommonVer, MinimumRPHVersion, MadeForGTAVersion, MadeForLSPDFRVersion, RAGENativeUIVersion, AudioFilesToCheckFor, OtherFilesToCheckFor))
                 {
-                    EntryPoint.Initialise();
+                    EntryPoint.Initialize();
                 }
             }
         }

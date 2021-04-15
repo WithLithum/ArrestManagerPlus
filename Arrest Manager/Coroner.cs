@@ -179,7 +179,7 @@ namespace Arrest_Manager
                 }
             }
             GameFiber.Wait(2500);
-            int randomRoll = EntryPoint.rnd.Next(1, 23);
+            int randomRoll = EntryPoint.SharedRandomInstance.Next(1, 23);
 
             string msg = "";
             switch (randomRoll)
@@ -343,7 +343,7 @@ namespace Arrest_Manager
 
         private static string GetCauseOfDeathPrelude()
         {
-            switch (EntryPoint.rnd.Next(3))
+            switch (EntryPoint.SharedRandomInstance.Next(3))
             {
                 case 0:
                     return "It seems like this one died from ~r~";
@@ -357,7 +357,7 @@ namespace Arrest_Manager
         private static string GetCauseOfDeathString(Ped body)
         {
             var causeModel = NativeFunction.Natives.GET_PED_CAUSE_OF_DEATH<Model>(body);
-            var cause = EntryPoint.IsLSPDFRPluginRunning("BetterEMS", new Version("3.0.0.0")) && API.BetterEMSFuncs.HasBeenTreated(body) ? API.BetterEMSFuncs.GetOriginalDeathWeaponAssetHash(body) : causeModel.Hash;
+            var cause = EntryPoint.IsLSPDFRPluginRunning("BetterEMS", new Version("3.0.0.0")) && API.BetterEmsFunctions.HasBeenTreated(body) ? API.BetterEmsFunctions.GetOriginalDeathWeaponAssetHash(body) : causeModel.Hash;
             if (causeModel.IsVehicle || cause == 0x07FC7D7A || cause == 0xA36D413E)
             {
                 return "a collision with a vehicle";
@@ -460,7 +460,7 @@ namespace Arrest_Manager
                 waitCount++;
                 if (waitCount == 70)
                 {
-                    Game.DisplayHelp("Service taking too long? Hold down ~b~" + EntryPoint.kc.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
+                    Game.DisplayHelp("Service taking too long? Hold down ~b~" + EntryPoint.KeyConvert.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
                 }
 
                 if (veh.Speed < 2f)
@@ -513,7 +513,7 @@ namespace Arrest_Manager
                     veh.Position = SpawnPoint;
                     veh.Heading = Heading;
                     drivingLoopCount = 39;
-                    Game.DisplayHelp("Transport taking too long? Hold down ~b~" + EntryPoint.kc.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
+                    Game.DisplayHelp("Transport taking too long? Hold down ~b~" + EntryPoint.KeyConvert.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
                 }
                 // if van is stuck for a 2nd time or takes too long, spawn it very near to the suspect
                 else if (((drivingLoopCount >= 70 || waitCount >= 110) && EntryPoint.AllowWarping) || forceCloseSpawn)

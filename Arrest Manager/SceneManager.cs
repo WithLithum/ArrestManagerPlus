@@ -105,7 +105,7 @@ namespace Arrest_Manager
                     waitCount++;
                     if (waitCount == 55)
                     {
-                        Game.DisplayHelp("Service taking too long? Hold down ~b~" + EntryPoint.kc.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
+                        Game.DisplayHelp("Service taking too long? Hold down ~b~" + EntryPoint.KeyConvert.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
                     }
                     //If van isn't moving
                     if (driverCar.Speed < 0.1f)

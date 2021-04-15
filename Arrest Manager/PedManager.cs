@@ -120,7 +120,7 @@ namespace Arrest_Manager
                             }
                             if (nearestveh.IsSeatFree(SeatToPutInto))
                             {
-                                Game.DisplayHelp("Press ~b~" + EntryPoint.kc.ConvertToString(PlacePedInVehicleKey) + "~s~ to place the suspect in the vehicle.");
+                                Game.DisplayHelp("Press ~b~" + EntryPoint.KeyConvert.ConvertToString(PlacePedInVehicleKey) + "~s~ to place the suspect in the vehicle.");
                                 if (Game.IsKeyDown(PlacePedInVehicleKey))
                                 {
                                     if (nearestveh.GetDoors().Length > SeatToPutInto + 1)
@@ -250,7 +250,6 @@ namespace Arrest_Manager
                     if (!suspect) { return; }
                 }
                 if (Functions.IsPedArrested(suspect)) { Game.DisplaySubtitle("Ped is already arrested", 3000); return; }
-                if (EntryPoint.suspectsPendingTransport.Contains(suspect)) { Game.DisplaySubtitle("Transport already pending for ped", 3000); return; }
                 if (suspect.IsInAnyVehicle(false)) { Game.DisplaySubtitle("Remove ped from vehicle", 3000); return; }
 
                 var pursuitPeds = Functions.GetPursuitPeds(Functions.GetActivePursuit()).ToList();
@@ -329,7 +328,7 @@ namespace Arrest_Manager
                 {
                     if (!grabShortcutMessageShown)
                     {
-                        Game.DisplayNotification("You can also grab suspects by pressing ~b~" + EntryPoint.kc.ConvertToString(GrabPedKey) + " " + EntryPoint.kc.ConvertToString(GrabPedModifierKey));
+                        Game.DisplayNotification("You can also grab suspects by pressing ~b~" + EntryPoint.KeyConvert.ConvertToString(GrabPedKey) + " " + EntryPoint.KeyConvert.ConvertToString(GrabPedModifierKey));
                     }
                     GrabPed();
                 }

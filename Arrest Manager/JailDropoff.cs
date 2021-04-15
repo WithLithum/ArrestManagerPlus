@@ -1,15 +1,11 @@
 ﻿using Rage;
 using Rage.Native;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace Arrest_Manager
 {
+    [Obsolete("No jail dropoffs.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S1104:Fields should not have public accessibility")]
     public class JailDropoff
     {
@@ -63,9 +59,19 @@ namespace Arrest_Manager
         /// Whether this drop-off is available to air vehicles.
         /// </summary>
         public bool AirVehicles;
+
+        /// <summary>
+        /// Whether this drop-off is available to water vehicles.
+        /// </summary>
         public bool WaterVehicles;
+
+        /// <summary>
+        /// Whether this drop-off is available to AI.
+        /// </summary>
         public bool AIDropoff;
 
+
+        /// <summary>Creates the blip.</summary>
         public void CreateBlip()
         {
             blip = new Blip(Position);
@@ -75,15 +81,21 @@ namespace Arrest_Manager
             NativeFunction.Natives.SET_BLIP_DISPLAY(blip, 3);
         }
 
-        internal bool SuitableForVeh(Vehicle veh)
+        /// <summary>
+        /// Determines whether the specified vehicle is suitable for dropoff.
+        /// </summary>
+        /// <param name="vehicle">The vehicle.</param>
+        /// <returns>
+        ///   <c>true</c> if the vehicle suitable for dropoff; otherwise, <c>false</c>.</returns>
+        internal bool IsVehicleSuitableForDropoff(Vehicle vehicle)
         {
-            if (veh)
+            if (vehicle)
             {
-                if (veh.IsBoat)
+                if (vehicle.IsBoat)
                 {
                     return WaterVehicles;
                 }
-                else if (veh.IsHelicopter || veh.IsPlane)
+                else if (vehicle.IsHelicopter || vehicle.IsPlane)
                 {
                     return AirVehicles;
                 }
@@ -93,54 +105,6 @@ namespace Arrest_Manager
                 }
             }
             return false;
-        }
-
-        internal static List<JailDropoff> AllJailDropoffs = new List<JailDropoff>();
-
-        internal static List<JailDropoff> DeserializeDropoffs()
-        {
-            if (Directory.Exists("Plugins/LSPDFR/Arrest Manager/JailDropoffs"))
-            {
-                foreach (string file in Directory.EnumerateFiles("Plugins/LSPDFR/Arrest Manager/JailDropoffs", "*.xml", SearchOption.TopDirectoryOnly))
-                {
-                    try
-                    {
-                        using (var reader = new StreamReader(file))
-                        {
-                            XmlSerializer deserializer = new XmlSerializer(typeof(List<JailDropoff>),
-                                new XmlRootAttribute("JailDropoffs"));
-                            
-                            AllJailDropoffs.AddRange((List<JailDropoff>)deserializer.Deserialize(reader));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Game.LogTrivial(e.ToString());
-                        Game.LogTrivial("Arrest Manager - Error parsing XML from " + file);
-                    }
-                }
-            }
-            else
-            {
-
-            }
-            if (AllJailDropoffs.Count == 0)
-            {
-                Game.DisplayNotification("Arrest Manager couldn't find a valid XML file with Jail Dropoffs in Plugins/LSPDFR/Arrest Manager/JailDropoffs.");
-                Game.LogTrivial("Arrest Manager couldn't find a valid XML file with Jail Dropoffs in Plugins/LSPDFR/Arrest Manager/JailDropoffs.");
-            }
-            return AllJailDropoffs;
-        }
-
-        internal static void SerializeJailDropoffs()
-        {
-            Directory.CreateDirectory("Plugins/LSPDFR/Arrest Manager/JailDropoffs");
-            using (StreamWriter writer = new StreamWriter("Plugins/LSPDFR/Arrest Manager/JailDropoffs/default.xml"))
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(List<JailDropoff>),
-                                new XmlRootAttribute("JailDropoffs"));
-                serializer.Serialize(writer, AllJailDropoffs);
-            }
         }
     }
 }

@@ -32,7 +32,6 @@ namespace Arrest_Manager.Services
                         return;
                     }
 
-                    if (EntryPoint.suspectsPendingTransport.Contains(pedtobepickedup)) return;
                     if (pedtobepickedup.IsInAnyVehicle(false)) 
                     {
                         Game.DisplayHelp("You cannot call taxi for a ped in a vehicle.");

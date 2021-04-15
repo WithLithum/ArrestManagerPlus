@@ -45,7 +45,7 @@ namespace Arrest_Manager.API
 
         public static void RequestTransport()
         {
-            if (EntryPoint.canChoose && EntryPoint.suspectAPI != null && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.suspectAPI) && !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.suspectAPI))
+            if (EntryPoint.CanChoose && EntryPoint.suspectAPI != null && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.suspectAPI) && !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.suspectAPI))
             {
                 if (EntryPoint.twoSuspectsApi.Count == 2 && !ExtensionMethods.IsPointOnWater(Game.LocalPlayer.Character.Position))
                 {
@@ -66,7 +66,7 @@ namespace Arrest_Manager.API
                     }
                 }
 
-                EntryPoint.canChoose = false;
+                EntryPoint.CanChoose = false;
                 Game.LogTrivial("API detected single transport - calling");
                 Game.RemoveNotification(EntryPoint.multiVanOnStandbyMsg);
                 Game.RemoveNotification(EntryPoint.vanOnStandbyMsg);
