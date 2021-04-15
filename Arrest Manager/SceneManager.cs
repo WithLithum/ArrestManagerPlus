@@ -411,7 +411,7 @@ namespace Arrest_Manager
                     {
                         if (!IsGrabEnabled)
                         {
-                            PedManager.GrabPed();
+                            GrabPed();
                         }
                         else
                         {

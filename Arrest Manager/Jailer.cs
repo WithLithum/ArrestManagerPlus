@@ -29,7 +29,7 @@ namespace Arrest_Manager
         private static bool MessageReceived { get; set; }
         internal static bool CanChoose { get; set; }
         private static bool CheckForJail { get; set; }
-        private static bool autoDoorEnabled { get; set; }
+        private static bool AutoDoorEnabled { get; set; }
         public static Keys SceneManagementKey { get; set; }
         public static Keys SceneManagementModifierKey { get; set; }
         public static float SceneManagementSpawnDistance { get; set; }
@@ -40,16 +40,15 @@ namespace Arrest_Manager
 
         public static InitializationFile InitializeFile()
         {
-            InitializationFile ini = new InitializationFile("Plugins/LSPDFR/Arrest Manager.ini");
+            InitializationFile ini = new InitializationFile("Plugins/LSPDFR/Arrest Manager+.ini");
             ini.Create();
             return ini;
         }
 
-        private static string getAutoDoorEnabled()
+        private static bool IsAutoDoorEnabled()
         {
             InitializationFile ini = InitializeFile();
-            string enabled = ini.ReadString("General", "AutoDoorShutEnabled", "true");
-            return enabled;
+            return ini.ReadBoolean("General", "AutoDoorShutEnabled", true);
         }
 
         private static void CalculateDistanceOfSceneManagement()
@@ -111,9 +110,9 @@ namespace Arrest_Manager
 
         internal static List<Ped> suspectsArrestedByPlayer { get; set; }
         private static List<Ped> SuspectsNotArrestedByPlayer = new List<Ped>();
-        private static void isSomeoneGettingArrestedByPlayer()
-        {
 
+        private static void IsPlayerArrestingAnyPed()
+        {
             GameFiber.StartNew(delegate
             {
                 while (true)
@@ -164,8 +163,6 @@ namespace Arrest_Manager
             });
         }
 
-        private static string suspectName = "";
-
         internal static readonly Random SharedRandomInstance = new Random();
         private static bool checkingForArrestedByPlayer { get; set; }
 
@@ -197,11 +194,11 @@ namespace Arrest_Manager
                 PedManager.TackleKey = (Keys)KeyConvert.ConvertFromString(InitializeFile().ReadString("Keybindings", "TackleKey", "E"));
                 PedManager.TackleButton = InitializeFile().ReadEnum<ControllerButtons>("Keybindings", "TackleButton", ControllerButtons.A);
 
-                autoDoorEnabled = bool.Parse(getAutoDoorEnabled());
+                AutoDoorEnabled = IsAutoDoorEnabled();
                 OfficerAudio = InitializeFile().ReadBoolean("Misc", "OfficerAudio", true);
                 DispatchVoice = InitializeFile().ReadBoolean("Misc", "DispatchAudio", true);
 
-                string Towtruckcolor = InitializeFile().ReadString("Misc", "TowTruckColourOverride", "");
+                string Towtruckcolor = InitializeFile().ReadString("Misc", "TowTruckColorOverride", "");
                 if (!string.IsNullOrWhiteSpace(Towtruckcolor))
                 {
                     VehicleManager.TowTruckColor = System.Drawing.Color.FromName(Towtruckcolor);
@@ -249,8 +246,8 @@ namespace Arrest_Manager
                 SceneManagementSpawnDistance = 70f;
                 DispatchVoice = true;
                 OfficerAudio = true;
-                autoDoorEnabled = true;
-                Game.DisplayNotification("~r~~h~Error while reading Arrest Manager.ini. Replace with default from download! Loading default settings...");
+                AutoDoorEnabled = true;
+                Game.DisplayNotification("~r~~h~ARREST MANAGER+ WARNING~n~~w~Failed to load Arrest Manager+.ini. Using default options!");
             }
 
             GameFiber.Wait(4000);
@@ -278,7 +275,7 @@ namespace Arrest_Manager
 
             SceneManager.CreateMenus();
 
-            isSomeoneGettingArrestedByPlayer();
+            IsPlayerArrestingAnyPed();
 
             //Listens for key input and calls appropriate method
 
@@ -305,7 +302,7 @@ namespace Arrest_Manager
 
                     }
 
-                    if (autoDoorEnabled)
+                    if (AutoDoorEnabled)
                     {
                         if (playerPed.IsInAnyVehicle(false))
                         {

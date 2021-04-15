@@ -242,7 +242,7 @@ namespace Arrest_Manager
 
         public static void ArrestPed(Ped suspect = null)
         {
-            GameFiber.StartNew(delegate
+            GameFiber.StartNew(() =>
             {
                 if (!suspect)
                 {
@@ -271,6 +271,7 @@ namespace Arrest_Manager
 
                 Functions.SetPedAsArrested(suspect, true);
                 suspect.MakePersistent();
+                suspect.BlockPermanentEvents = true;
                 suspect.Tasks.ClearImmediately();
                 suspect.Tasks.StandStill(-1);
                 suspect.Tasks.PlayAnimation("mp_arresting", "idle", 8f, AnimationFlags.UpperBodyOnly | AnimationFlags.SecondaryTask | AnimationFlags.Loop);

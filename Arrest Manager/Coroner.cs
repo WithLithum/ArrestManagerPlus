@@ -61,7 +61,7 @@ namespace Arrest_Manager
 
         public void InitCoronerThread()
         {
-            GameFiber.StartNew(delegate
+            GameFiber.StartNew(() =>
             {
                 try
                 {
