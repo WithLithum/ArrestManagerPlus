@@ -209,20 +209,28 @@ namespace Arrest_Manager
                               GameFiber.Yield();
 
                           }
-                          modelName = car.Model.Name.ToLower();
-                          modelName = char.ToUpper(modelName[0]) + modelName.Substring(1);
 
-
-                          if (car.Model.IsCar && !car.IsDead && !AlwaysFlatbed)
+                          var displayName = NativeFunction.Natives.GET_DISPLAY_NAME_FROM_VEHICLE_MODEL<string>(car.Model.Hash);
+                          if (EntryPoint.UseDisplayNameForVehicle && !string.IsNullOrWhiteSpace(displayName) && displayName != "CARNOTFOUND")
                           {
-                              Game.DisplayNotification("A ~g~tow truck ~s~has been dispatched for the target ~r~" + modelName + ". ~s~Await arrival.");
+                              modelName = Game.GetLocalizedString(displayName);
+                          }
+                          else
+                          {
+                              modelName = car.Model.Name.ToLower();
+                              modelName = char.ToUpper(modelName[0]) + modelName.Substring(1);
+                          }
+
+                          if (car.Model.IsCar && !car.IsDead && car.EngineHealth > 100f && car.FuelTankHealth > 750f && !AlwaysFlatbed)
+                          {
+                              Game.DisplayNotification("~b~Dispatch~w~: Sending a tow truck to pickup " + modelName + ".");
                               towTruck = new Vehicle(TowtruckModel, SpawnPoint, Heading);
-                              Game.DisplayHelp("~b~If you want to attach the vehicle yourself, get in now.");
+                              Game.DisplayHelp("If you want to attach the vehicle yourself, get in now.");
                               flatbed = false;
                           }
                           else
                           {
-                              Game.DisplayNotification("A ~g~flatbed ~s~has been dispatched for the target ~r~" + modelName + ". ~s~Await arrival.");
+                              Game.DisplayNotification("~b~Dispatch~w~: Sending a flatbed to pickup " + modelName + ".");
                               towTruck = new Vehicle(FlatbedModel, SpawnPoint, Heading);
                           }
                       }
@@ -245,13 +253,13 @@ namespace Arrest_Manager
                       {
                           driver = towTruck.CreateRandomDriver();
                       }
-                      driver.MakeMissionPed();
+                      driver.MakePersistent();
+                      driver.BlockPermanentEvents = true;
                       driver.IsInvincible = true;
                       driver.Money = 1233;
 
                       driveToEntity(driver, towTruck, car, false);
-                      Rage.Native.NativeFunction.Natives.START_VEHICLE_HORN(towTruck, 5000, 0, true);
-
+                      NativeFunction.Natives.START_VEHICLE_HORN(towTruck, 5000, 0, true);
 
                       if (towTruck.Speed > 15f)
                       {
@@ -288,7 +296,7 @@ namespace Arrest_Manager
                               GameFiber.Sleep(1);
                               driver.Money = 1233;
                               if (!car.Exists()) { break; }
-                              if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(Keys.D0) || automaticallyAttach)
+                              if (ExtensionMethods.IsKeyDownRightNowComputerCheck(Keys.D0) || automaticallyAttach)
                               {
                                   if (Game.LocalPlayer.Character.IsInVehicle(car, false))
                                   {
@@ -306,8 +314,8 @@ namespace Arrest_Manager
                                       else
                                       {
                                           car.Delete();
-                                          Game.LogTrivial("Tow truck model is not registered as a tow truck ingame - if this is a custom vehicle, contact the vehicle author.");
-                                          Game.DisplayNotification("Tow truck model is not registered as a tow truck ingame - if this is a custom vehicle, contact the vehicle author.");
+                                          Game.LogTrivial("AM+: Towing vehicle lacks tow arm");
+                                          Game.DisplayNotification("~r~~h~AM+ WARNING~n~~w~The tow truck model does not have tow arms. Contact the vehicle author if it is a custom tow truck, or correct the model. The vehicle is deleted.");
                                       }
                                       Game.HideHelp();
                                       break;
@@ -437,6 +445,7 @@ namespace Arrest_Manager
                   }
               });
         }
+
         public string[] insurancevehicles = new string[] { "JACKAL", "ASTEROPE", "TAILGATER", "PREMIER", "FUSILADE" };
         private Blip businesscarblip;
         private Ped passenger;
@@ -516,7 +525,7 @@ namespace Arrest_Manager
                       while (true)
                       {
                           SpawnPoint = World.GetNextPositionOnStreet(playerPed.Position.Around(EntryPoint.SceneManagementSpawnDistance));
-                          travelDistance = Rage.Native.NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, playerPed.Position.X, playerPed.Position.Y, playerPed.Position.Z);
+                          travelDistance = NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, playerPed.Position.X, playerPed.Position.Y, playerPed.Position.Z);
                           waitCount++;
                           if (Vector3.Distance(playerPed.Position, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 10f && travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
                           {
@@ -527,7 +536,7 @@ namespace Arrest_Manager
                               Game.DisplayNotification("Take the car ~s~to a more reachable location.");
                               Game.DisplayNotification("Alternatively, press ~b~Y ~s~to force a spawn in the ~g~wilderness.");
                           }
-                          if ((waitCount >= 600) && Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.Y))
+                          if ((waitCount >= 600) && ExtensionMethods.IsKeyDownComputerCheck(Keys.Y))
                           {
                               SpawnPoint = Game.LocalPlayer.Character.Position.Around(15f);
                               break;

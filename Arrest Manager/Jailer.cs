@@ -34,6 +34,8 @@ namespace Arrest_Manager
         public static Keys SceneManagementModifierKey { get; set; }
         public static float SceneManagementSpawnDistance { get; set; }
 
+        internal static bool UseDisplayNameForVehicle { get; set; }
+
         //INI
 
         public static InitializationFile InitializeFile()
@@ -238,6 +240,7 @@ namespace Arrest_Manager
 
                 }
 
+                UseDisplayNameForVehicle = InitializeFile().ReadBoolean("Misc", "UseDisplayNameForVehicle", true);
             }
             catch
             {

@@ -42,7 +42,7 @@ namespace Arrest_Manager
 #pragma warning disable S1075 // URIs should not be hardcoded
         internal static readonly string DownloadURL = "https://github.com/RelaperCrystal/Arrest-Manager";
 #pragma warning restore S1075 // URIs should not be hardcoded
-        internal static readonly string PluginName = "Arrest Manager";
+        internal static readonly string PluginName = "Arrest Manager+";
         internal static readonly string Path = "Plugins/LSPDFR/Arrest Manager.dll";
 
         public static void Functions_OnOnDutyStateChanged(bool onDuty)

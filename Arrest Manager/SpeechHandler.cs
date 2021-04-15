@@ -10,11 +10,11 @@ using System.Windows.Forms;
 
 namespace Arrest_Manager
 {
-   internal class SpeechHandler
+    internal static class SpeechHandler
     {
-        public static bool DisplayTime = false;
+        internal static bool DisplayTime { get; set; }
         private static List<string> Answers;
-        //public enum AnswersResults { Positive, Negative, Neutral, Null};
+
         public static int DisplayAnswers(List<string> PossibleAnswers)
         {
             Game.FrameRender += DrawAnswerWindow;
@@ -28,46 +28,31 @@ namespace Arrest_Manager
                 while (DisplayTime)
                 {
                     GameFiber.Yield();
-                    
-                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D1))
-                    {
-                        if (Answers.Count >= 1)
-                        {
-                            AnswerGiven = Answers[0];
 
-                        }
-                    }
-                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D2))
+                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D1) && Answers.Count >= 1)
                     {
-                        if (Answers.Count >= 2)
-                        {
-                            AnswerGiven = Answers[1];
-                        }
+                        AnswerGiven = Answers[0];
                     }
-                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D3))
+                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D2) && Answers.Count >= 2)
                     {
-                        if (Answers.Count >= 3)
-                        {
-                            AnswerGiven = Answers[2];
-                        }
+                        AnswerGiven = Answers[1];
                     }
-                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D4))
+                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D3) && Answers.Count >= 3)
                     {
-                        if (Answers.Count >= 4)
-                        {
-                            AnswerGiven = Answers[3];
-                        }
+                        AnswerGiven = Answers[2];
                     }
-                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D5))
+                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D4) && Answers.Count >= 4)
                     {
-                        if (Answers.Count >= 5)
-                        {
-                            AnswerGiven = Answers[4];
-                        }
+                        AnswerGiven = Answers[3];
+                    }
+                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.D5) && Answers.Count >= 5)
+                    {
+                        AnswerGiven = Answers[4];
                     }
                 }
             });
-            while (AnswerGiven == "")
+
+            while (string.IsNullOrEmpty(AnswerGiven))
             {
                 GameFiber.Yield();
                 if (!DisplayTime) { break; }
@@ -81,7 +66,7 @@ namespace Arrest_Manager
 
         }
 
-        private static void DrawAnswerWindow(System.Object sender, Rage.GraphicsEventArgs e)
+        private static void DrawAnswerWindow(object sender, GraphicsEventArgs e)
         {
             if (DisplayTime)
             {

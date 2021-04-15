@@ -288,7 +288,7 @@ namespace Arrest_Manager
 
         public static void CreatePedManagementMenu()
         {
-            PedManagementMenu = new UIMenu("Ped Manager", "");
+            PedManagementMenu = new UIMenu("ArrestManager+", "PED MANAGEMENT");
             itemFollow = new UIMenuItem("Follow");
             itemGrab = new UIMenuItem("Grab");
             itemCallTaxi = new UIMenuItem("Call taxi");
