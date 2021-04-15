@@ -166,7 +166,7 @@ namespace Arrest_Manager.API
             }
             else
             {
-                Coroner.smartRadioMain();
+                Coroner.CallFromSmartRadio();
             }
         }
 
@@ -177,7 +177,7 @@ namespace Arrest_Manager.API
         /// <param name="radioAnimation">Determines whether to play a radio animation for the player.</param>
         public static void CallCoroner(Vector3 destination, bool radioAnimation)
         {
-            new Coroner(destination, radioAnimation).handleCoroner();
+            new Coroner(destination, radioAnimation).InitCoronerThread();
         }
     }
 }

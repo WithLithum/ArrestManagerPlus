@@ -260,7 +260,7 @@ namespace Arrest_Manager
 
             if (IsLSPDFRPluginRunning("PoliceSmartRadio"))
             {
-                API.SmartRadioFuncs.AddActionToButton(Coroner.smartRadioMain, Coroner.CanBeCalled, "coroner");
+                API.SmartRadioFuncs.AddActionToButton(Coroner.CallFromSmartRadio, Coroner.CanBeCalled, "coroner");
                 API.SmartRadioFuncs.AddActionToButton(VehicleManager.SmartRadioTow, "tow");
             }
             MessageReceived = false;

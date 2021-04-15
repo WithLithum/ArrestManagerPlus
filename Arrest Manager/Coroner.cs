@@ -1,4 +1,5 @@
 ﻿using Albo1125.Common.CommonLibrary;
+using LSPD_First_Response.Mod.API;
 using Rage;
 using Rage.Native;
 using System;
@@ -42,13 +43,13 @@ namespace Arrest_Manager
 #pragma warning restore S4210 // Windows Forms entry points should be marked with STAThread
         {
             if (GetNearbyDeadPeds(Game.LocalPlayer.Character.Position).Count == 0) { Game.DisplaySubtitle("No nearby dead people were found, sorry!"); return; }
-            new Coroner(Game.LocalPlayer.Character.Position).handleCoroner();
+            new Coroner(Game.LocalPlayer.Character.Position).InitCoronerThread();
         }
 
-        public static void smartRadioMain()
+        public static void CallFromSmartRadio()
         {
             if (GetNearbyDeadPeds(Game.LocalPlayer.Character.Position).Count == 0) { Game.DisplaySubtitle("No nearby dead people were found, sorry!"); return; }
-            new Coroner(Game.LocalPlayer.Character.Position, false).handleCoroner();
+            new Coroner(Game.LocalPlayer.Character.Position, false).InitCoronerThread();
         }
 
         public Coroner(Vector3 destination, bool anims = true)
@@ -58,7 +59,7 @@ namespace Arrest_Manager
             this.anims = anims;
         }
 
-        public void handleCoroner()
+        public void InitCoronerThread()
         {
             GameFiber.StartNew(delegate
             {
@@ -76,8 +77,7 @@ namespace Arrest_Manager
                         waitCount++;
                         if (Vector3.Distance(destination, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f && travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
                         {
-
-                            Vector3 directionFromVehicleToPed1 = (destination - SpawnPoint);
+                            Vector3 directionFromVehicleToPed1 = destination - SpawnPoint;
                             directionFromVehicleToPed1.Normalize();
 
                             float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
@@ -95,32 +95,39 @@ namespace Arrest_Manager
                         {
                             Game.DisplayNotification("Press ~b~Y ~s~to force a spawn in the ~g~wilderness.");
                         }
-                        if ((waitCount >= 600) && Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.Y))
+                        if ((waitCount >= 600) && ExtensionMethods.IsKeyDownComputerCheck(Keys.Y))
                         {
                             SpawnPoint = destination.Around(15f);
                             break;
                         }
                         GameFiber.Yield();
                     }
-                    coronerVeh = new Vehicle(CoronerVehicleModel, SpawnPoint, Heading);
-                    coronerVeh.IsPersistent = true;
+                    coronerVeh = new Vehicle(CoronerVehicleModel, SpawnPoint, Heading)
+                    {
+                        IsPersistent = true
+                    };
                     if (coronerVeh.HasSiren)
                     {
                         coronerVeh.IsSirenOn = true;
                     }
                     var coronerBlip = coronerVeh.AttachBlip();
                     coronerBlip.Color = System.Drawing.Color.Black;
+                    coronerBlip.Scale = 0.80f;
+                    coronerBlip.Sprite = BlipSprite.Friend;
                     coronerBlip.Flash(1000, 30000);
                     driver = new Ped(CoronerModel, Vector3.Zero, 0);
                     driver.MakeMissionPed();
                     driver.IsInvincible = true;
                     driver.WarpIntoVehicle(coronerVeh, -1);
+                    Functions.SetPedCantBeArrestedByPlayer(driver, true);
 
                     passenger = new Ped(CoronerModel, Vector3.Zero, 0);
                     passenger.MakeMissionPed();
                     passenger.IsInvincible = true;
                     passenger.WarpIntoVehicle(coronerVeh, 0);
-                    Game.DisplayNotification("~s~A ~b~coroner ~s~is en route to your location.");
+                    Functions.SetPedCantBeArrestedByPlayer(passenger, true);
+                    Functions.SetPedCanBePulledOver(driver, false);
+                    Game.DisplayHelp("Coroner en-route.");
                     if (anims)
                     {
                         Game.LocalPlayer.Character.Tasks.PlayAnimation("random@arrests", "generic_radio_chatter", 1.5f, AnimationFlags.UpperBodyOnly | AnimationFlags.SecondaryTask);
