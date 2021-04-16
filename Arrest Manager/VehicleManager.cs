@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rage;
 using System.Windows.Forms;
 using RAGENativeUI.Elements;
@@ -31,7 +29,7 @@ namespace Arrest_Manager
         private Vehicle towTruck;
         private Ped driver;
         private Vehicle car;
-        private static List<Vehicle> TowTrucksBeingUsed = new List<Vehicle>();
+        private static readonly List<Vehicle> TowTrucksBeingUsed = new List<Vehicle>();
         private string modelName;
 
         internal bool RecruitNearbyTowtruck(out Ped TowDriver, out Vehicle TowTruck)
@@ -73,12 +71,14 @@ namespace Arrest_Manager
                 Game.DisplayHelp("There was no vehicle to tow.");
                 return;
             }
+
             var towingCar = nearbyvehs[0];
             if (Vector3.Distance(Game.LocalPlayer.Character.Position, towingCar.Position) > 6f)
             {
                 Game.DisplayHelp("Nearest vehicle is too far away. Get closer.");
                 return;
             }
+
             if (towingCar.HasOccupants)
             {
                 if (nearbyvehs.Length == 2)
@@ -95,9 +95,8 @@ namespace Arrest_Manager
                     Game.DisplayHelp("Remove all occupants from vehicle and try again.");
                     return;
                 }
-
             }
-            
+
             if (towingCar.Model.IsHelicopter)
             {
                 // Callouts+ Towing service :)
@@ -115,7 +114,6 @@ namespace Arrest_Manager
 
         internal void TowVehicle(Vehicle car, bool playanims = true)
         {
-
             _ = GameFiber.StartNew(delegate
               {
                   if (!car.Exists()) { return; }
@@ -124,10 +122,8 @@ namespace Arrest_Manager
                       bool flatbed = true;
                       if (car.HasOccupants)
                       {
-
                           Game.DisplayNotification("Vehicle has occupants. Aborting tow.");
                           return;
-
                       }
                       if (car.IsPoliceVehicle)
                       {
@@ -135,12 +131,12 @@ namespace Arrest_Manager
                           while (true)
                           {
                               GameFiber.Yield();
-                              if (ExtensionMethods.IsKeyDownComputerCheck(System.Windows.Forms.Keys.Y))
+                              if (ExtensionMethods.IsKeyDownComputerCheck(Keys.Y))
                               {
                                   Game.RemoveNotification(noti);
                                   break;
                               }
-                              if (ExtensionMethods.IsKeyDownComputerCheck(System.Windows.Forms.Keys.N))
+                              if (ExtensionMethods.IsKeyDownComputerCheck(Keys.N))
                               {
                                   Game.RemoveNotification(noti);
                                   return;
@@ -197,16 +193,12 @@ namespace Arrest_Manager
                               waitCount++;
                               if (Vector3.Distance(car.Position, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f && travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
                               {
-
-                                  Vector3 directionFromVehicleToPed1 = (car.Position - SpawnPoint);
-                                  directionFromVehicleToPed1.Normalize();
-
-                                  float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
+                                  var spawnDirection = car.Position - SpawnPoint;
+                                  spawnDirection.Normalize();
+                                  float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(spawnDirection);
 
                                   if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
                                   {
-
-
                                       break;
                                   }
                               }
@@ -225,7 +217,6 @@ namespace Arrest_Manager
                                   break;
                               }
                               GameFiber.Yield();
-
                           }
 
                           var displayName = car.GetDisplayName();
@@ -262,7 +253,6 @@ namespace Arrest_Manager
                           towTruck.SecondaryColor = TowTruckColor;
                           towTruck.PearlescentColor = TowTruckColor;
                       }
-
 
                       towblip = towTruck.AttachBlip();
                       towblip.Color = System.Drawing.Color.Blue;
@@ -319,7 +309,6 @@ namespace Arrest_Manager
                                   if (Game.LocalPlayer.Character.IsInVehicle(car, false))
                                   {
                                       Game.DisplaySubtitle("Leave the vehicle.", 5000);
-
                                   }
                                   else
                                   {
@@ -338,7 +327,6 @@ namespace Arrest_Manager
                                       Game.HideHelp();
                                       break;
                                   }
-
                               }
                               else if (Vector3.Distance(towTruck.GetOffsetPosition(Vector3.RelativeBack * 7f), car.Position) < 2.1f)
                               {
@@ -365,16 +353,15 @@ namespace Arrest_Manager
                                           else
                                           {
                                               car.Delete();
-                                              Game.LogTrivial("Tow truck model is not registered as a tow truck ingame - if this is a custom vehicle, contact the vehicle author.");
-                                              Game.DisplayNotification("Tow truck model is not registered as a tow truck ingame - if this is a custom vehicle, contact the vehicle author.");
+                                              Game.LogTrivial("AM+: Towing vehicle lacks tow arm");
+                                              Game.DisplayNotification("~r~~h~AM+ WARNING~n~~w~The tow truck model does not have tow arms. Contact the vehicle author if it is a custom tow truck, or correct the model. The vehicle is deleted.");
                                           }
                                           break;
                                       }
                                   }
                                   else
                                   {
-                                      Game.DisplaySubtitle("~b~Align the ~b~vehicle~s~ with the ~g~tow truck.", 1);
-
+                                      Game.DisplaySubtitle("Align the ~b~vehicle~s~ with the ~g~tow truck.", 1);
                                   }
                               }
                               else
@@ -394,14 +381,14 @@ namespace Arrest_Manager
                                   else
                                   {
                                       car.Delete();
-                                      Game.LogTrivial("Tow truck model is not registered as a tow truck ingame - if this is a custom vehicle, contact the vehicle author.");
-                                      Game.DisplayNotification("Tow truck model is not registered as a tow truck ingame - if this is a custom vehicle, contact the vehicle author.");
+                                      Game.LogTrivial("Tow truck model is not registered as a tow truck in-game - if this is a custom vehicle, contact the vehicle author.");
+                                      Game.DisplayNotification("Tow truck model is not registered as a tow truck in-game - if this is a custom vehicle, contact the vehicle author.");
                                   }
                                   break;
                               }
                               if (Vector3.Distance(car.Position, towTruck.Position) > 80f)
                               {
-                                  Game.DisplaySubtitle("Towing service cancelled", 5000);
+                                  Game.DisplaySubtitle("Towing service canceled", 5000);
                                   showImpoundMsg = false;
                                   break;
                               }
@@ -420,7 +407,6 @@ namespace Arrest_Manager
                       GameFiber.Wait(1000);
                       if (car.Exists() && towTruck.Exists() && !flatbed && !car.FindTowTruck().Exists())
                       {
-
                           car.Position = towTruck.GetOffsetPosition(Vector3.RelativeBack * 7f);
                           car.Heading = towTruck.Heading;
 
@@ -431,8 +417,8 @@ namespace Arrest_Manager
                           else
                           {
                               car.Delete();
-                              Game.LogTrivial("Tow truck model is not registered as a tow truck ingame - if this is a custom vehicle, contact the vehicle author.");
-                              Game.DisplayNotification("Tow truck model is not registered as a tow truck ingame - if this is a custom vehicle, contact the vehicle author.");
+                              Game.LogTrivial("AM+: Towing vehicle lacks tow arm");
+                              Game.DisplayNotification("~r~~h~AM+ WARNING~n~~w~The tow truck model does not have tow arms. Contact the vehicle author if it is a custom tow truck, or correct the model. The vehicle is deleted.");
                           }
                       }
                       if (driver.Exists()) { driver.Dismiss(); }
@@ -450,7 +436,6 @@ namespace Arrest_Manager
                       {
                           car.Delete();
                       }
-
                   }
 #pragma warning disable CA1031 // Do not catch general exception types
                   catch (Exception e)
@@ -474,10 +459,8 @@ namespace Arrest_Manager
         private Vehicle businessCar;
         internal void RequestInsurance()
         {
-
             _ = GameFiber.StartNew(delegate
               {
-
                   try
                   {
                       Vehicle[] nearbyvehs = Game.LocalPlayer.Character.GetNearbyVehicles(2);
@@ -493,6 +476,7 @@ namespace Arrest_Manager
                           Game.DisplayNotification("~r~Couldn't detect a close enough vehicle.");
                           return;
                       }
+
                       if (car.HasOccupants)
                       {
                           if (nearbyvehs.Length == 2)
@@ -509,24 +493,25 @@ namespace Arrest_Manager
                               Game.DisplayNotification("~r~Couldn't detect a close enough vehicle without occupants.");
                               return;
                           }
-
                       }
+
                       if (car.IsPoliceVehicle)
                       {
                           Game.DisplayNotification("Are you sure you want to remove the police vehicle? ~h~~b~Y/N");
                           while (true)
                           {
                               GameFiber.Yield();
-                              if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(System.Windows.Forms.Keys.Y))
+                              if (ExtensionMethods.IsKeyDownComputerCheck(Keys.Y))
                               {
                                   break;
                               }
-                              if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(System.Windows.Forms.Keys.N))
+                              if (ExtensionMethods.IsKeyDownComputerCheck(Keys.N))
                               {
                                   return;
                               }
                           }
                       }
+
                       ToggleMobilePhone(Game.LocalPlayer.Character, true);
                       GameFiber.Sleep(3000);
                       ToggleMobilePhone(Game.LocalPlayer.Character, false);
@@ -534,8 +519,15 @@ namespace Arrest_Manager
                       carblip = car.AttachBlip();
                       carblip.Color = System.Drawing.Color.Black;
                       carblip.Scale = 0.7f;
-                      _ = car.Model.Name.ToLower();
-                      modelName = char.ToUpper(modelName[0]) + modelName.Substring(1);
+
+                      modelName = car.GetDisplayName();
+                      if (!EntryPoint.UseDisplayNameForVehicle || string.IsNullOrWhiteSpace(modelName))
+                      {
+                          modelName = car.Model.Name;
+                          modelName = modelName.ToLower();
+                          modelName = modelName[0].ToString().ToUpper() + modelName.Substring(1);
+                      }
+
                       Ped playerPed = Game.LocalPlayer.Character;
                       if (EntryPoint.IsLSPDFRPlusRunning)
                       {
@@ -564,7 +556,6 @@ namespace Arrest_Manager
                               break;
                           }
                           GameFiber.Yield();
-
                       }
                       car.LockStatus = VehicleLockStatus.Unlocked;
                       car.MustBeHotwired = false;
@@ -573,41 +564,43 @@ namespace Arrest_Manager
                       businesscarblip = businessCar.AttachBlip();
                       businesscarblip.Color = System.Drawing.Color.Blue;
                       businessCar.IsPersistent = true;
-                      Vector3 directionFromVehicleToPed = (car.Position - businessCar.Position);
+                      Vector3 directionFromVehicleToPed = car.Position - businessCar.Position;
                       directionFromVehicleToPed.Normalize();
                       businessCar.Heading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed);
-                      driver = new Ped("a_m_y_business_02", businessCar.Position, businessCar.Heading);
-                      driver.BlockPermanentEvents = true;
+                      driver = new Ped("a_m_y_business_02", businessCar.Position, businessCar.Heading)
+                      {
+                          BlockPermanentEvents = true
+                      };
                       driver.WarpIntoVehicle(businessCar, -1);
                       driver.Money = 1;
 
-                      passenger = new Ped("a_m_y_business_02", businessCar.Position, businessCar.Heading);
-                      passenger.BlockPermanentEvents = true;
+                      passenger = new Ped("a_m_y_business_02", businessCar.Position, businessCar.Heading)
+                      {
+                          BlockPermanentEvents = true
+                      };
                       passenger.WarpIntoVehicle(businessCar, 0);
                       passenger.Money = 1;
 
                       driveToEntity(driver, businessCar, car, true);
-                      Rage.Native.NativeFunction.Natives.START_VEHICLE_HORN(businessCar, 3000, 0, true);
+                      NativeFunction.Natives.START_VEHICLE_HORN(businessCar, 3000, 0, true);
                       while (true)
                       {
                           GameFiber.Yield();
                           driver.Tasks.DriveToPosition(car.GetOffsetPosition(Vector3.RelativeFront * 2f), 10f, VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians).WaitForCompletion(500);
                           if (Vector3.Distance(businessCar.Position, car.Position) < 15f)
                           {
-
-
                               driver.Tasks.PerformDrivingManeuver(VehicleManeuver.Wait);
                               break;
                           }
+
                           if (Vector3.Distance(car.Position, businessCar.Position) > 50f)
                           {
                               SpawnPoint = World.GetNextPositionOnStreet(car.Position);
                               businessCar.Position = SpawnPoint;
-                              directionFromVehicleToPed = (car.Position - SpawnPoint);
+                              directionFromVehicleToPed = car.Position - SpawnPoint;
                               directionFromVehicleToPed.Normalize();
 
-                              float vehicleHeading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed);
-                              businessCar.Heading = vehicleHeading;
+                              businessCar.Heading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed);
                           }
                       }
 
@@ -633,7 +626,7 @@ namespace Arrest_Manager
                       GameFiber.Sleep(9000);
                       Game.DisplayNotification("mphud", "mp_player_ready", "~h~Mors Mutual Insurance", "~b~Vehicle Pickup Status Update", "Thank you for letting us collect our client's ~h~" + modelName + "!");
                   }
-
+#pragma warning disable CA1031 // Do not catch general exception types
                   catch (Exception e)
                   {
                       Game.LogTrivial(e.ToString());
@@ -646,13 +639,15 @@ namespace Arrest_Manager
                       if (businessCar.Exists()) { businessCar.Delete(); }
                       if (passenger.Exists()) { passenger.Delete(); }
                   }
+#pragma warning restore CA1031 // Do not catch general exception types
               });
         }
 
         internal static UIMenu VehicleManagementMenu { get; private set; }
         private static UIMenuItem callForTowTruckItem;
         private static UIMenuItem callForInsuranceItem;
-        public static void createVehicleManagementMenu()
+
+        internal static void CreateVehicleManagementMenu()
         {
             VehicleManagementMenu = new UIMenu("ArrestManager+", "VEHICLE MANAGEMENT");
             VehicleManagementMenu.AddItem(MenuSwitchListItem);
@@ -663,9 +658,8 @@ namespace Arrest_Manager
             VehicleManagementMenu.OnItemSelect += OnItemSelect;
             VehicleManagementMenu.MouseControlsEnabled = false;
             VehicleManagementMenu.AllowCameraMovement = true;
-
-
         }
+
         public static void OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
         {
             if (sender != VehicleManagementMenu) { return; }

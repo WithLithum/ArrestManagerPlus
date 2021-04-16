@@ -344,7 +344,7 @@ namespace Arrest_Manager
             
             _menuPool.Add(PedManagementMenu);
             PedManagementMenu.OnListChange += OnListChange;
-            createVehicleManagementMenu();
+            CreateVehicleManagementMenu();
             _menuPool.Add(VehicleManagementMenu);
             VehicleManagementMenu.OnListChange += OnListChange;
             Game.FrameRender += Process;
