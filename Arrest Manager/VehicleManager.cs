@@ -12,6 +12,7 @@ using Rage.Native;
 using static Arrest_Manager.SceneManager;
 using Albo1125.Common.CommonLibrary;
 using RelaperCommons.FirstResponse;
+using RelaperCommons;
 
 namespace Arrest_Manager
 {
@@ -162,7 +163,8 @@ namespace Arrest_Manager
                       car.IsPersistent = true;
                       if (playanims)
                       {
-                          Game.LocalPlayer.Character.Tasks.PlayAnimation("random@arrests", "generic_radio_chatter", 1.5f, AnimationFlags.UpperBodyOnly | AnimationFlags.SecondaryTask);
+                          Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 3000);
+
                           GameFiber.Wait(1000);
 
                           BleepPlayer.Play();
@@ -217,7 +219,7 @@ namespace Arrest_Manager
                                   Game.DisplayNotification("Take the car ~s~to a more reachable location.");
                                   Game.DisplayNotification("Alternatively, press ~b~Y ~s~to force a spawn in the ~g~wilderness.");
                               }
-                              if ((waitCount >= 600) && Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.Y))
+                              if ((waitCount >= 600) && ExtensionMethods.IsKeyDownComputerCheck(Keys.Y))
                               {
                                   SpawnPoint = Game.LocalPlayer.Character.Position.Around(15f);
                                   break;
@@ -226,7 +228,7 @@ namespace Arrest_Manager
 
                           }
 
-                          var displayName = NativeFunction.Natives.GET_DISPLAY_NAME_FROM_VEHICLE_MODEL<string>(car.Model.Hash);
+                          var displayName = car.GetDisplayName();
                           if (EntryPoint.UseDisplayNameForVehicle && !string.IsNullOrWhiteSpace(displayName) && displayName != "CARNOTFOUND")
                           {
                               modelName = Game.GetLocalizedString(displayName);
@@ -293,7 +295,7 @@ namespace Arrest_Manager
                           while (car && car.HasOccupants)
                           {
                               GameFiber.Yield();
-                              Game.DisplaySubtitle("~r~Please remove all occupants from the vehicle.", 1);
+                              Game.DisplayHelp("Remove all occupants from vehicle.");
                           }
                           if (car)
                           {
@@ -316,7 +318,7 @@ namespace Arrest_Manager
                               {
                                   if (Game.LocalPlayer.Character.IsInVehicle(car, false))
                                   {
-                                      Game.DisplaySubtitle("~r~Get out of the vehicle first.", 5000);
+                                      Game.DisplaySubtitle("Leave the vehicle.", 5000);
 
                                   }
                                   else
@@ -409,8 +411,10 @@ namespace Arrest_Manager
                       Game.HideHelp();
                       if (showImpoundMsg)
                       {
-                          Game.DisplayNotification("The target ~r~" + modelName + " ~s~has been impounded!");
+                          Game.DisplayNotification("commonmenu", "shop_garage_icon_b", "Tow Services", "Impounded", $"Vehicle: ~b~{modelName}~n~Time: {DateTime.Now}");
                       }
+
+                      driver.PlayAmbientSpeech("GENERIC_THANKS", true);
                       driver.Tasks.PerformDrivingManeuver(VehicleManeuver.GoForwardStraight).WaitForCompletion(600);
                       driver.Tasks.CruiseWithVehicle(25f);
                       GameFiber.Wait(1000);
@@ -448,10 +452,11 @@ namespace Arrest_Manager
                       }
 
                   }
+#pragma warning disable CA1031 // Do not catch general exception types
                   catch (Exception e)
                   {
+                      Game.LogTrivial("AM+: Tow truck script caught exception");
                       Game.LogTrivial(e.ToString());
-                      Game.LogTrivial("Tow Truck Crashed");
                       Game.DisplayNotification("The towing service was interrupted.");
                       if (towblip.Exists()) { towblip.Delete(); }
                       if (carblip.Exists()) { carblip.Delete(); }
@@ -459,6 +464,7 @@ namespace Arrest_Manager
                       if (car.Exists()) { car.Delete(); }
                       if (towTruck.Exists()) { towTruck.Delete(); }
                   }
+#pragma warning restore CA1031 // Do not catch general exception types
               });
         }
 
