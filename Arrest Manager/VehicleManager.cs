@@ -655,6 +655,7 @@ namespace Arrest_Manager
             VehicleManagementMenu = new UIMenu("ArrestManager+", "VEHICLE MANAGEMENT");
             VehicleManagementMenu.AddItem(MenuSwitchListItem);
             vehicleCheckItem = new UIMenuItem("Check for Status");
+            VehicleManagementMenu.AddItem(vehicleCheckItem);
             callForTowTruckItem = new UIMenuItem("Request Tow Service");
             VehicleManagementMenu.AddItem(callForTowTruckItem);
             callForInsuranceItem = new UIMenuItem("Request Insurance Pick-up");
@@ -692,6 +693,12 @@ namespace Arrest_Manager
                 }
 
                 var checkingCar = nearbyvehs[0];
+                if (checkingCar == Game.LocalPlayer.Character.CurrentVehicle)
+                {
+                    Game.DisplayNotification("Get out of the car, and try again.");
+                    return;
+                }
+
                 if (Vector3.Distance(Game.LocalPlayer.Character.Position, checkingCar.Position) > 6f)
                 {
                     Game.DisplayHelp("Nearest vehicle is too far away. Get closer.");

@@ -350,16 +350,19 @@ namespace Arrest_Manager
             }
             else if (selectedItem == itemCheckId)
             {
-                var ped = GetNearestValidPed(allowStopped: true);
+                var ped = GetNearestValidPed(allowStopped: true, subtitleDisplayTime: 3000);
                 if (!ped)
                 {
                     return;
                 }
 
-                var persona = Functions.GetPersonaForPed(ped);
-                Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 3000);
-                RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, "Requesting status check for ~y~" + persona.ToNameAndDOBString());
-                Functions.DisplayPedId(ped, false);
+                GameFiber.StartNew(() =>
+                {
+                    var persona = Functions.GetPersonaForPed(ped);
+                    Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 3000);
+                    RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, "Requesting status check for ~y~" + persona.ToNameAndDOBString());
+                    Functions.DisplayPedId(ped, false);
+                });
             }
         }
     }
