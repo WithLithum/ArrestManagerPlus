@@ -11,6 +11,7 @@ using LSPD_First_Response.Mod.API;
 using Rage.Native;
 using Albo1125.Common.CommonLibrary;
 using Arrest_Manager.Services;
+using RelaperCommons.FirstResponse;
 
 namespace Arrest_Manager
 {
@@ -28,7 +29,7 @@ namespace Arrest_Manager
 
         internal static Keys PlacePedInVehicleKey { get; set; } = Keys.G;
 
-        public static Ped GetNearestValidPed(float radius = 2.5f, bool allowPursuitPeds = false, int subtitleDisplayTime = 8000)
+        public static Ped GetNearestValidPed(float radius = 2.5f, bool allowPursuitPeds = false, bool allowStopped = false int subtitleDisplayTime = 8000)
         {
             if (Game.LocalPlayer.Character.GetNearbyPeds(1).Length == 0 || Game.LocalPlayer.Character.IsInAnyVehicle(false)) { return null; }
             var nearestPed = Game.LocalPlayer.Character.GetNearbyPeds(1)[0];
@@ -48,7 +49,7 @@ namespace Arrest_Manager
                 return null;
             }
 
-            if (Functions.IsPedStoppedByPlayer(nearestPed)) 
+            if (Functions.IsPedStoppedByPlayer(nearestPed) && !allowStopped)
             {
                 Game.DisplayHelp("To grab this subject, you must dismiss them from stop (on foot) first.", subtitleDisplayTime);
                 return null;
@@ -282,6 +283,7 @@ namespace Arrest_Manager
         }
 
         internal static UIMenu PedManagementMenu { get; private set; }
+        private static UIMenuItem itemCheckId;
         private static UIMenuItem itemFollow;
         private static UIMenuItem itemGrab;
         private static UIMenuItem itemCallTaxi;
@@ -290,13 +292,14 @@ namespace Arrest_Manager
         public static void CreatePedManagementMenu()
         {
             PedManagementMenu = new UIMenu("ArrestManager+", "PED MANAGEMENT");
+            itemCheckId = new UIMenuItem("Status Check");
             itemFollow = new UIMenuItem("Follow");
             itemGrab = new UIMenuItem("Grab");
             itemCallTaxi = new UIMenuItem("Call taxi");
             itemRequestCoroner = new UIMenuItem("Coroner", "Calls a coroner to deal with all nearby dead people.");
 
             PedManagementMenu.AddItem(SceneManager.MenuSwitchListItem);
-            PedManagementMenu.AddItems(itemFollow, itemGrab, itemCallTaxi, itemRequestCoroner);
+            PedManagementMenu.AddItems(itemCheckId, itemFollow, itemGrab, itemCallTaxi, itemRequestCoroner);
 
             PedManagementMenu.RefreshIndex();
             PedManagementMenu.MouseControlsEnabled = false;
@@ -310,21 +313,17 @@ namespace Arrest_Manager
             Rage.Native.NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
             if (selectedItem == itemFollow)
             {
-                
                 if (!IsFollowingEnabled)
                 {
                     MakePedFollowPlayer();
-                    
                 }
                 else
                 {
                     IsFollowingEnabled = false;
-                    
                 }
             }
             else if (selectedItem == itemGrab)
             {
-                
                 if (!IsGrabEnabled)
                 {
                     if (!grabShortcutMessageShown)
@@ -340,7 +339,6 @@ namespace Arrest_Manager
             }
             else if (selectedItem == itemCallTaxi)
             {
-                
                 new Taxi().CallTaxi();
                 PedManagementMenu.Visible = false;
                 //taxi
@@ -349,6 +347,19 @@ namespace Arrest_Manager
             {
                 SceneManager.CallCoronerTime = true;
                 sender.Visible = false;
+            }
+            else if (selectedItem == itemCheckId)
+            {
+                var ped = GetNearestValidPed(allowStopped: true);
+                if (!ped)
+                {
+                    return;
+                }
+
+                var persona = Functions.GetPersonaForPed(ped);
+                Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction());
+                RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, "Requesting status check for ~y~" + persona.ToNameAndDOBString());
+                Functions.DisplayPedId(ped, false);
             }
         }
     }
