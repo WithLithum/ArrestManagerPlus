@@ -347,7 +347,7 @@ namespace Arrest_Manager
             }
             else if (selectedItem == itemRequestCoroner)
             {
-                SceneManager.callCoronerTime = true;
+                SceneManager.CallCoronerTime = true;
                 sender.Visible = false;
             }
         }

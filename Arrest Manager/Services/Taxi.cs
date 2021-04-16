@@ -106,7 +106,7 @@ namespace Arrest_Manager.Services
                     taxidriver.Money = 1233;
 
                     Game.DisplayNotification("~b~Taxi Control~w~: Dispatching taxi to your location.");
-                    driveToEntity(taxidriver, taxi, pedtobepickedup, true);
+                    TaskDriveToEntity(taxidriver, taxi, pedtobepickedup, true);
                     NativeFunction.Natives.START_VEHICLE_HORN(taxi, 5000, 0, true);
                     if (taxi.Speed > 15f)
                     {

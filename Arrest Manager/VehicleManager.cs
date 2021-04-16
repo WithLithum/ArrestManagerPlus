@@ -266,7 +266,7 @@ namespace Arrest_Manager
                       driver.IsInvincible = true;
                       driver.Money = 1233;
 
-                      driveToEntity(driver, towTruck, car, false);
+                      TaskDriveToEntity(driver, towTruck, car, false);
                       NativeFunction.Natives.START_VEHICLE_HORN(towTruck, 5000, 0, true);
 
                       if (towTruck.Speed > 15f)
@@ -581,7 +581,7 @@ namespace Arrest_Manager
                       passenger.WarpIntoVehicle(businessCar, 0);
                       passenger.Money = 1;
 
-                      driveToEntity(driver, businessCar, car, true);
+                      TaskDriveToEntity(driver, businessCar, car, true);
                       NativeFunction.Natives.START_VEHICLE_HORN(businessCar, 3000, 0, true);
                       while (true)
                       {
