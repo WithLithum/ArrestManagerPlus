@@ -331,10 +331,8 @@ namespace Arrest_Manager
         {
             GameFiber.StartNew(() =>
             {
-            while (true)
-            {
-                nearestWaterPed = GetNearestValidPed(6f, true, false);
-
+                while (true)
+                {
                     GameFiber.Yield();
 
                     if ((ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementModifierKey) || (EntryPoint.SceneManagementModifierKey == Keys.None)) && ExtensionMethods.IsKeyDownComputerCheck(EntryPoint.SceneManagementKey))
@@ -353,7 +351,7 @@ namespace Arrest_Manager
                     {
                         NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
                     }
-                    else if ((Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(GrabPedModifierKey) || GrabPedModifierKey == Keys.None) && Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(GrabPedKey))
+                    else if ((ExtensionMethods.IsKeyDownRightNowComputerCheck(GrabPedModifierKey) || GrabPedModifierKey == Keys.None) && ExtensionMethods.IsKeyDownComputerCheck(GrabPedKey))
                     {
                         if (!IsGrabEnabled)
                         {
@@ -364,31 +362,8 @@ namespace Arrest_Manager
                             IsGrabEnabled = false;
                         }
                     }
-                    //if ped is in water offer proper arresting mechanism
-                    else if (Game.LocalPlayer.Character.SubmersionLevel > 0.2 && Game.IsControlPressed(2, GameControl.Context) && nearestWaterPed.Exists() && !Functions.IsPedArrested(nearestWaterPed) && nearestWaterPed.SubmersionLevel > 0.2)
-                    {
-                        arrestBarDisplayTime = true;
-                        Functions.SetPedCantBeArrestedByPlayer(nearestWaterPed, true);
-                        arrestBar.Percentage += 0.03f;
-                        if (arrestBar.Percentage > 0.99)
-                        {
-                            nearestWaterPed.Tasks.ClearImmediately();
-                            ArrestPed(nearestWaterPed);
-                            arrestBarDisplayTime = false;
-                            arrestBar.Percentage = 0;
-                        }
-                    }
-                    else
-                    {
-                        arrestBarDisplayTime = false;
-                        arrestBar.Percentage = 0;
-                        if (nearestWaterPed && !Functions.IsPedArrested(nearestWaterPed))
-                        {
-                            Functions.SetPedCantBeArrestedByPlayer(nearestWaterPed, false);
-                        }
-                    }
 
-                    if (Game.LocalPlayer.Character.SubmersionLevel < 0.2 && (ExtensionMethods.IsKeyDownComputerCheck(PedManager.TackleKey) || Game.IsControllerButtonDown(TackleButton)) && Game.LocalPlayer.Character.Speed >= 5.3f)
+                    if (Game.LocalPlayer.Character.SubmersionLevel < 0.2 && (ExtensionMethods.IsKeyDownComputerCheck(TackleKey) || Game.IsControllerButtonDown(TackleButton)) && Game.LocalPlayer.Character.Speed >= 5.3f)
                     {
                         var nearestPed = GetNearestValidPed(2f, true, false, -1);
                         if (nearestPed && !Functions.IsPedArrested(nearestPed) && !Functions.IsPedGettingArrested(nearestPed))
