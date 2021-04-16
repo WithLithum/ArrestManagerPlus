@@ -11,6 +11,7 @@ using LSPD_First_Response.Mod.API;
 using Rage.Native;
 using static Arrest_Manager.SceneManager;
 using Albo1125.Common.CommonLibrary;
+using RelaperCommons.FirstResponse;
 
 namespace Arrest_Manager
 {
@@ -68,13 +69,13 @@ namespace Arrest_Manager
             Vehicle[] nearbyvehs = Game.LocalPlayer.Character.GetNearbyVehicles(2);
             if (nearbyvehs.Length == 0)
             {
-                Game.DisplayNotification("~r~Couldn't detect a close enough vehicle.");
+                Game.DisplayHelp("There was no vehicle to tow.");
                 return;
             }
             var towingCar = nearbyvehs[0];
             if (Vector3.Distance(Game.LocalPlayer.Character.Position, towingCar.Position) > 6f)
             {
-                Game.DisplayNotification("~r~Couldn't detect a close enough vehicle.");
+                Game.DisplayHelp("Nearest vehicle is too far away. Get closer.");
                 return;
             }
             if (towingCar.HasOccupants)
@@ -84,22 +85,30 @@ namespace Arrest_Manager
                     towingCar = nearbyvehs[1];
                     if (towingCar.HasOccupants)
                     {
-                        Game.DisplayNotification("~r~Couldn't detect a close enough vehicle without occupants.");
+                        Game.DisplayHelp("Remove all occupants from vehicle and try again.");
                         return;
                     }
                 }
                 else
                 {
-                    Game.DisplayNotification("~r~Couldn't detect a close enough vehicle without occupants.");
+                    Game.DisplayHelp("Remove all occupants from vehicle and try again.");
                     return;
                 }
 
             }
+            
+            if (towingCar.Model.IsHelicopter)
+            {
+                // Callouts+ Towing service :)
+                RadioUtil.DisplayRadioQuote("Dispatch", "WE CAN'T TOW A HELICOPTER!");
+            }
+
             if (!towingCar.Model.IsCar && !towingCar.Model.IsBike && !towingCar.Model.IsQuadBike)
             {
-                Game.DisplayNotification("Unfortunately, this vehicle can't be towed or impounded.");
+                Game.DisplayHelp("Only cars and bikes can be towed.");
                 return;
             }
+
             TowVehicle(towingCar, playanims);
         }
 
@@ -125,12 +134,12 @@ namespace Arrest_Manager
                           while (true)
                           {
                               GameFiber.Yield();
-                              if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(System.Windows.Forms.Keys.Y))
+                              if (ExtensionMethods.IsKeyDownComputerCheck(System.Windows.Forms.Keys.Y))
                               {
                                   Game.RemoveNotification(noti);
                                   break;
                               }
-                              if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(System.Windows.Forms.Keys.N))
+                              if (ExtensionMethods.IsKeyDownComputerCheck(System.Windows.Forms.Keys.N))
                               {
                                   Game.RemoveNotification(noti);
                                   return;
@@ -138,11 +147,18 @@ namespace Arrest_Manager
                           }
                           if (!car.Exists()) { return; }
                       }
+
+                      if (car.Model.IsHelicopter)
+                      {
+                          RadioUtil.DisplayRadioQuote("Dispatch", "WE CAN'T TOW A HELICOPTER!");
+                      }
+
                       if (!car.Model.IsCar && !car.Model.IsBike && !car.Model.IsQuadBike && !car.Model.IsBoat && !car.Model.IsJetski)
                       {
-                          Game.DisplayNotification("Unfortunately, this vehicle can't be towed or impounded.");
+                          Game.DisplayHelp("This vehicle cannot be towed");
                           return;
                       }
+
                       car.IsPersistent = true;
                       if (playanims)
                       {
@@ -158,7 +174,7 @@ namespace Arrest_Manager
                       carblip.Scale = 0.7f;
                       if (EntryPoint.IsLSPDFRPlusRunning)
                       {
-                          API.LSPDFRPlusFuncs.AddCountToStatistic(Main.PluginName, "Vehicles towed");
+                          API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "Vehicles towed");
                       }
                       _ = Game.LocalPlayer.Character;
                       if (car.Model.IsCar && RecruitNearbyTowtruck(out driver, out towTruck))
@@ -517,7 +533,7 @@ namespace Arrest_Manager
                       Ped playerPed = Game.LocalPlayer.Character;
                       if (EntryPoint.IsLSPDFRPlusRunning)
                       {
-                          API.LSPDFRPlusFuncs.AddCountToStatistic(Main.PluginName, "Insurance pickups");
+                          API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "Insurance pickups");
                       }
                       Vector3 SpawnPoint = World.GetNextPositionOnStreet(playerPed.Position.Around(EntryPoint.SceneManagementSpawnDistance));
                       float travelDistance;
@@ -632,8 +648,8 @@ namespace Arrest_Manager
         private static UIMenuItem callForInsuranceItem;
         public static void createVehicleManagementMenu()
         {
-            VehicleManagementMenu = new UIMenu("Vehicle Manager", "");
-            VehicleManagementMenu.AddItem(SceneManager.MenuSwitchListItem);
+            VehicleManagementMenu = new UIMenu("ArrestManager+", "VEHICLE MANAGEMENT");
+            VehicleManagementMenu.AddItem(MenuSwitchListItem);
             callForTowTruckItem = new UIMenuItem("Tow truck");
             VehicleManagementMenu.AddItem(callForTowTruckItem);
             callForInsuranceItem = new UIMenuItem("Insurance company");

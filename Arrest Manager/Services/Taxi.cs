@@ -47,7 +47,7 @@ namespace Arrest_Manager.Services
                     Functions.SetPedCantBeArrestedByPlayer(pedtobepickedup, true);
                     if (EntryPoint.IsLSPDFRPlusRunning)
                     {
-                        API.LSPDFRPlusFuncs.AddCountToStatistic(Main.PluginName, "Taxis called");
+                        API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "Taxis called");
                     }
                     float Heading;
                     bool UseSpecialID = true;
