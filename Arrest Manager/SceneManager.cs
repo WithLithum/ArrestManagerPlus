@@ -333,7 +333,7 @@ namespace Arrest_Manager
             {
             while (true)
             {
-                nearestWaterPed = GetNearestValidPed(6f, true, -1);
+                nearestWaterPed = GetNearestValidPed(6f, true, false);
 
                     GameFiber.Yield();
 
@@ -390,7 +390,7 @@ namespace Arrest_Manager
 
                     if (Game.LocalPlayer.Character.SubmersionLevel < 0.2 && (ExtensionMethods.IsKeyDownComputerCheck(PedManager.TackleKey) || Game.IsControllerButtonDown(TackleButton)) && Game.LocalPlayer.Character.Speed >= 5.3f)
                     {
-                        var nearestPed = GetNearestValidPed(2f, true, -1);
+                        var nearestPed = GetNearestValidPed(2f, true, false, -1);
                         if (nearestPed && !Functions.IsPedArrested(nearestPed) && !Functions.IsPedGettingArrested(nearestPed))
                         {
                             Game.LocalPlayer.Character.IsRagdoll = true;

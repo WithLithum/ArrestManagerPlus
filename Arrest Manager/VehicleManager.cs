@@ -706,10 +706,10 @@ namespace Arrest_Manager
                     {
                         return;
                     }
-                    var stolen = checkingCar.IsStolen : "~r~Yes" ? "~g~No";
+                    var stolen = checkingCar.IsStolen ? "~r~Yes" : "~g~No";
 
                     Game.DisplayNotification("commonmenu", "shop_mask_icon_a", "Dispatch", "Vehicle Status", $"Model: ~b~{checkingCar.GetDisplayName()}~w~~n~License Plate: ~y~{checkingCar.LicensePlate}~w~~n~Owner: {Functions.GetVehicleOwnerName(checkingCar)}");
-                    Game.DisplayNotification($"Stolen: {stolen}~w~~n~");
+                    Game.DisplayNotification($"Stolen: {stolen}");
                 });
             }
         }

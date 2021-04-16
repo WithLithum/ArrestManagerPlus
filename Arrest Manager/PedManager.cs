@@ -29,7 +29,7 @@ namespace Arrest_Manager
 
         internal static Keys PlacePedInVehicleKey { get; set; } = Keys.G;
 
-        public static Ped GetNearestValidPed(float radius = 2.5f, bool allowPursuitPeds = false, bool allowStopped = false int subtitleDisplayTime = 8000)
+        public static Ped GetNearestValidPed(float radius = 2.5f, bool allowPursuitPeds = false, bool allowStopped = false, int subtitleDisplayTime = 8000)
         {
             if (Game.LocalPlayer.Character.GetNearbyPeds(1).Length == 0 || Game.LocalPlayer.Character.IsInAnyVehicle(false)) { return null; }
             var nearestPed = Game.LocalPlayer.Character.GetNearbyPeds(1)[0];
@@ -357,7 +357,7 @@ namespace Arrest_Manager
                 }
 
                 var persona = Functions.GetPersonaForPed(ped);
-                Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction());
+                Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 3000);
                 RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, "Requesting status check for ~y~" + persona.ToNameAndDOBString());
                 Functions.DisplayPedId(ped, false);
             }
