@@ -95,7 +95,7 @@ namespace Arrest_Manager
 
                 if (EntryPoint.IsLSPDFRPlusRunning)
                 {
-                    API.LSPDFRPlusFuncs.AddCountToStatistic(Main.PluginName, "People grabbed");
+                    API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "People grabbed");
                 }
                 FollowingPed.Tasks.ClearImmediately();
 
@@ -206,7 +206,7 @@ namespace Arrest_Manager
 
                 if (EntryPoint.IsLSPDFRPlusRunning)
                 {
-                    API.LSPDFRPlusFuncs.AddCountToStatistic(Main.PluginName, "People made to follow you");
+                    API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "People made to follow you");
                 }
                 while (FollowingPed.Exists())
                 {

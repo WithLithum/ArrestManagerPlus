@@ -95,6 +95,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>dependencies\RagePluginHookSDK.dll</HintPath>
     </Reference>
+    <Reference Include="RelaperCommons">
+      <HintPath>D:\SDK\RelaperCommons.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -111,7 +114,7 @@
     <Compile Include="API\BetterEmsFunctions.cs" />
     <Compile Include="API\ComputerPlusFuncs.cs" />
     <Compile Include="API\Functions.cs" />
-    <Compile Include="API\LSPDFRPlusFuncs.cs" />
+    <Compile Include="API\LspdfrPlusFunctions.cs" />
     <Compile Include="API\SmartRadioFuncs.cs" />
     <Compile Include="Coroner.cs" />
     <Compile Include="Main.cs" />
@@ -126,7 +129,11 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Arrest Manager+.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
@@ -134,7 +141,7 @@
   </PropertyGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties BuildVersion_BuildVersioningStyle="None.None.MonthAndDayStamp.TimeStamp" BuildVersion_UpdateAssemblyVersion="True" BuildVersion_UpdateFileVersion="True" BuildVersion_StartDate="2000/1/1" />
+      <UserProperties BuildVersion_StartDate="2000/1/1" BuildVersion_UpdateFileVersion="True" BuildVersion_UpdateAssemblyVersion="True" BuildVersion_BuildVersioningStyle="None.None.MonthAndDayStamp.TimeStamp" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
