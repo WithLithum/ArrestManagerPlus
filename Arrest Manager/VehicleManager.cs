@@ -11,6 +11,7 @@ using static Arrest_Manager.SceneManager;
 using Albo1125.Common.CommonLibrary;
 using RelaperCommons.FirstResponse;
 using RelaperCommons;
+using System.Runtime.CompilerServices;
 
 namespace Arrest_Manager
 {
@@ -644,6 +645,8 @@ namespace Arrest_Manager
         }
 
         internal static UIMenu VehicleManagementMenu { get; private set; }
+
+        private static UIMenuItem vehicleCheckItem;
         private static UIMenuItem callForTowTruckItem;
         private static UIMenuItem callForInsuranceItem;
 
@@ -651,9 +654,10 @@ namespace Arrest_Manager
         {
             VehicleManagementMenu = new UIMenu("ArrestManager+", "VEHICLE MANAGEMENT");
             VehicleManagementMenu.AddItem(MenuSwitchListItem);
-            callForTowTruckItem = new UIMenuItem("Tow truck");
+            vehicleCheckItem = new UIMenuItem("Check for Status");
+            callForTowTruckItem = new UIMenuItem("Request Tow Service");
             VehicleManagementMenu.AddItem(callForTowTruckItem);
-            callForInsuranceItem = new UIMenuItem("Insurance company");
+            callForInsuranceItem = new UIMenuItem("Request Insurance Pick-up");
             VehicleManagementMenu.AddItem(callForInsuranceItem);
             VehicleManagementMenu.OnItemSelect += OnItemSelect;
             VehicleManagementMenu.MouseControlsEnabled = false;
@@ -675,6 +679,38 @@ namespace Arrest_Manager
                 NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
                 new VehicleManager().RequestInsurance();
                 VehicleManagementMenu.Visible = false;
+            }
+            else if (selectedItem == vehicleCheckItem)
+            {
+                NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+                Vehicle[] nearbyvehs = Game.LocalPlayer.Character.GetNearbyVehicles(2);
+                if (nearbyvehs.Length == 0)
+                {
+                    Game.DisplayHelp("There was no vehicle to check");
+                    return;
+                }
+
+                var checkingCar = nearbyvehs[0];
+                if (Vector3.Distance(Game.LocalPlayer.Character.Position, checkingCar.Position) > 6f)
+                {
+                    Game.DisplayHelp("Nearest vehicle is too far away. Get closer.");
+                    return;
+                }
+
+                _ = GameFiber.StartNew(() =>
+                {
+                    GameFiber.Sleep(3000);
+
+                    if (!checkingCar)
+                    {
+                        return;
+                    }
+                    var stolen = checkingCar.IsStolen : "~r~Yes" ? "~g~No";
+
+                    Game.DisplayNotification("commonmenu", "shop_mask_icon_a", "Dispatch", "Vehicle Status", $"Model: ~b~{checkingCar.GetDisplayName()}~w~~n~License Plate: ~y~{checkingCar.LicensePlate}~w~~n~Owner: {Functions.GetVehicleOwnerName(checkingCar)}");
+                    Game.DisplayNotification($"Stolen: {stolen}~w~~n~");
+                });
             }
         }
     }
