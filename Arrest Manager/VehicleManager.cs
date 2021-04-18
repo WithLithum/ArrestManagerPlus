@@ -221,9 +221,9 @@ namespace Arrest_Manager
                           }
 
                           var displayName = car.GetDisplayName();
-                          if (EntryPoint.UseDisplayNameForVehicle && !string.IsNullOrWhiteSpace(displayName) && displayName != "CARNOTFOUND")
+                          if (EntryPoint.UseDisplayNameForVehicle && !string.IsNullOrWhiteSpace(displayName))
                           {
-                              modelName = Game.GetLocalizedString(displayName);
+                              modelName = displayName;
                           }
                           else
                           {

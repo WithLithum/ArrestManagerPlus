@@ -276,7 +276,6 @@ namespace Arrest_Manager
         private static readonly TimerBarPool timerBarPool = new TimerBarPool();
         private static readonly BarTimerBar arrestBar = new BarTimerBar("Arresting...");
         private static bool arrestBarInPool;
-        private static bool arrestBarDisplayTime;
 
         private static MenuPool _menuPool;
         private static UIMenu ActiveMenu = PedManagementMenu;
@@ -389,23 +388,6 @@ namespace Arrest_Manager
         public static void Process(object sender, GraphicsEventArgs e)
         {
             _menuPool.ProcessMenus();
-
-            if (arrestBarDisplayTime && !arrestBarInPool)
-            {
-                timerBarPool.Add(arrestBar);
-                arrestBarInPool = true;
-            }
-
-            if (!arrestBarDisplayTime && arrestBarInPool)
-            {
-                timerBarPool.Remove(arrestBar);
-                arrestBarInPool = false;
-            }
-
-            if (arrestBarDisplayTime)
-            {
-                timerBarPool.Draw();
-            }
         }
     }
 }
