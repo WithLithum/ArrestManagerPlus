@@ -654,11 +654,11 @@ namespace Arrest_Manager
         {
             VehicleManagementMenu = new UIMenu("ArrestManager+", "VEHICLE MANAGEMENT");
             VehicleManagementMenu.AddItem(MenuSwitchListItem);
-            vehicleCheckItem = new UIMenuItem("Check for Status");
+            vehicleCheckItem = new UIMenuItem("Request Status Check", "Requests the dispatch to check the status of the nearest vehicle.");
             VehicleManagementMenu.AddItem(vehicleCheckItem);
-            callForTowTruckItem = new UIMenuItem("Request Tow Service");
+            callForTowTruckItem = new UIMenuItem("Request Tow Service", "Requests a tow truck from dispatch.");
             VehicleManagementMenu.AddItem(callForTowTruckItem);
-            callForInsuranceItem = new UIMenuItem("Request Insurance Pick-up");
+            callForInsuranceItem = new UIMenuItem("Request Insurance Pick-up", "Requests insurance service to pick up the nearest vehicle.");
             VehicleManagementMenu.AddItem(callForInsuranceItem);
             VehicleManagementMenu.OnItemSelect += OnItemSelect;
             VehicleManagementMenu.MouseControlsEnabled = false;

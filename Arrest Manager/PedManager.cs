@@ -292,14 +292,14 @@ namespace Arrest_Manager
         public static void CreatePedManagementMenu()
         {
             PedManagementMenu = new UIMenu("ArrestManager+", "PED MANAGEMENT");
-            itemCheckId = new UIMenuItem("Status Check");
-            itemFollow = new UIMenuItem("Follow");
-            itemGrab = new UIMenuItem("Grab");
-            itemCallTaxi = new UIMenuItem("Call taxi");
-            itemRequestCoroner = new UIMenuItem("Coroner", "Calls a coroner to deal with all nearby dead people.");
+            itemCheckId = new UIMenuItem("Request Status Check", "Requests status check of the nearest ped from dispatch.");
+            itemFollow = new UIMenuItem("Ask to Follow", "Asks the nearest ped to follow the player.");
+            itemGrab = new UIMenuItem("Grab Nearest Ped", "Grabs the nearest ped.");
+            itemCallTaxi = new UIMenuItem("Request Taxi Escort", "Requests a taxi to pick up the target.");
+            itemRequestCoroner = new UIMenuItem("Request Coroner Unit", "Calls a coroner to deal with all nearby dead people.");
 
             PedManagementMenu.AddItem(SceneManager.MenuSwitchListItem);
-            PedManagementMenu.AddItems(itemCheckId, itemFollow, itemGrab, itemCallTaxi, itemRequestCoroner);
+            PedManagementMenu.AddItems(itemCheckId, itemCallTaxi, itemRequestCoroner, itemFollow, itemGrab);
 
             PedManagementMenu.RefreshIndex();
             PedManagementMenu.MouseControlsEnabled = false;
