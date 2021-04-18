@@ -29,7 +29,7 @@ namespace Arrest_Manager
 
         internal static Keys PlacePedInVehicleKey { get; set; } = Keys.G;
 
-        public static Ped GetNearestValidPed(float radius = 2.5f, bool allowPursuitPeds = false, bool allowStopped = false, int subtitleDisplayTime = 8000)
+        public static Ped GetNearestValidPed(float radius = 2.5f, bool allowPursuitPeds = false, bool allowStopped = false, bool allowInVehicle = false, int subtitleDisplayTime = 8000)
         {
             if (Game.LocalPlayer.Character.GetNearbyPeds(1).Length == 0 || Game.LocalPlayer.Character.IsInAnyVehicle(false)) { return null; }
             var nearestPed = Game.LocalPlayer.Character.GetNearbyPeds(1)[0];
@@ -55,7 +55,7 @@ namespace Arrest_Manager
                 return null;
             }
 
-            if (nearestPed.IsInAnyVehicle(false))
+            if (nearestPed.IsInAnyVehicle(false) && !allowInVehicle)
             {
                 Game.DisplayHelp("Suspects in vehicle cannot be grabbed.", subtitleDisplayTime);
                 return null;
@@ -360,7 +360,12 @@ namespace Arrest_Manager
                 {
                     var persona = Functions.GetPersonaForPed(ped);
                     Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 3000);
-                    RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, "Requesting status check for ~y~" + persona.ToNameAndDOBString());
+                    RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, $"Requesting status check for ~y~{persona.FullName}~w~, born on ~b~{persona.Birthday}");
+                    SceneManager.BleepPlayer.Play();
+                    GameFiber.Sleep(3500);
+                    RadioUtil.DisplayRadioQuote("Dispatch", "10-4, stand by...");
+                    GameFiber.Sleep(1000);
+
                     Functions.DisplayPedId(ped, false);
                 });
             }

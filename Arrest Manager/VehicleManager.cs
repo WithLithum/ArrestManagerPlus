@@ -707,7 +707,13 @@ namespace Arrest_Manager
 
                 _ = GameFiber.StartNew(() =>
                 {
-                    GameFiber.Sleep(3000);
+                    Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 1000);
+                    RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, $"Requesting plate check for ~y~{checkingCar.LicensePlate}");
+                    BleepPlayer.Play();
+                    GameFiber.Sleep(2500);
+                    RadioUtil.DisplayRadioQuote("Dispatch", "10-4, stand by for plate check...");
+
+                    GameFiber.Sleep(5000);
 
                     if (!checkingCar)
                     {
