@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Albo1125.Common.CommonLibrary;
+using LemonUI;
+using LemonUI.Menus;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using Rage.Native;
-using RAGENativeUI;
-using RAGENativeUI.Elements;
 using static Arrest_Manager.PedManager;
 using static Arrest_Manager.VehicleManager;
 
@@ -273,57 +273,45 @@ namespace Arrest_Manager
             Heading1 = Heading;
         }
 
-        private static readonly TimerBarPool timerBarPool = new TimerBarPool();
-        private static readonly BarTimerBar arrestBar = new BarTimerBar("Arresting...");
-        private static bool arrestBarInPool;
-
-        private static MenuPool _menuPool;
-        private static UIMenu ActiveMenu = PedManagementMenu;
-        internal static UIMenuListItem MenuSwitchListItem { get; private set; }
+        private static ObjectPool _menuPool;
+        private static NativeMenu ActiveMenu = PedManagementMenu;
+        internal static NativeListItem<dynamic> MenuSwitchListItem { get; private set; }
         public static void CreateMenus()
         {
-            arrestBar.ForegroundColor = System.Drawing.Color.DarkBlue;
-            arrestBar.BackgroundColor = ControlPaint.Dark(arrestBar.ForegroundColor);
-
-            _menuPool = new MenuPool();
+            _menuPool = new ObjectPool();
             List<dynamic> menus = new List<dynamic>() { "Ped Manager", "Vehicle Manager" };
-            MenuSwitchListItem = new UIMenuListItem("Scene Management", "", menus);
+            MenuSwitchListItem = new NativeListItem<dynamic>("Scene Management", menus);
+            MenuSwitchListItem.Activated += MenuSwitchListItem_Activated;
             CreatePedManagementMenu();
 
             _menuPool.Add(PedManagementMenu);
-            PedManagementMenu.OnListChange += OnListChange;
             CreateVehicleManagementMenu();
             _menuPool.Add(VehicleManagementMenu);
-            VehicleManagementMenu.OnListChange += OnListChange;
             Game.FrameRender += Process;
             MainLogic();
         }
-        public static void OnListChange(UIMenu sender, UIMenuListItem list, int index)
+
+        private static void MenuSwitchListItem_Activated(object sender, EventArgs e)
         {
-            if ((sender != PedManagementMenu && sender != VehicleManagementMenu) || list != MenuSwitchListItem) { return; }
+            string selectedMenuString = MenuSwitchListItem.Items[MenuSwitchListItem.SelectedIndex].ToString();
+            NativeMenu selected;
 
-            string selectedmenustring = list.Collection[list.Index].ToString();
-
-            UIMenu selectedmenu;
-            if (selectedmenustring == "Ped Manager")
+            if (selectedMenuString == "Ped Manager")
             {
-                selectedmenu = PedManagementMenu;
+                selected = PedManagementMenu;
             }
             else
             {
-                selectedmenu = VehicleManagementMenu;
+                selected = VehicleManagementMenu;
             }
 
-            if (selectedmenu != sender)
+            if (ActiveMenu != selected)
             {
-                sender.Visible = false;
-                selectedmenu.Visible = true;
-                ActiveMenu = selectedmenu;
-                list.Selected = false;
+                ActiveMenu.Visible = false;
+                selected.Visible = true;
+                ActiveMenu = selected;
             }
         }
-
-        private static Ped nearestWaterPed;
 
         internal static bool CallCoronerTime { get; set; }
         private static void MainLogic()
@@ -346,7 +334,7 @@ namespace Arrest_Manager
                         }
                     }
 
-                    if (_menuPool.IsAnyMenuOpen())
+                    if (_menuPool.AreAnyVisible)
                     {
                         NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
                     }
@@ -387,7 +375,7 @@ namespace Arrest_Manager
 
         public static void Process(object sender, GraphicsEventArgs e)
         {
-            _menuPool.ProcessMenus();
+            _menuPool.Process();
         }
     }
 }

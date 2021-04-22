@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Rage;
 using System.Windows.Forms;
-using RAGENativeUI.Elements;
-using RAGENativeUI;
 using LSPD_First_Response.Mod.API;
 using Rage.Native;
 using static Arrest_Manager.SceneManager;
 using Albo1125.Common.CommonLibrary;
 using RelaperCommons.FirstResponse;
 using RelaperCommons;
-using System.Runtime.CompilerServices;
+using LemonUI.Menus;
 
 namespace Arrest_Manager
 {
@@ -644,87 +642,90 @@ namespace Arrest_Manager
               });
         }
 
-        internal static UIMenu VehicleManagementMenu { get; private set; }
+        internal static NativeMenu VehicleManagementMenu { get; private set; }
 
-        private static UIMenuItem vehicleCheckItem;
-        private static UIMenuItem callForTowTruckItem;
-        private static UIMenuItem callForInsuranceItem;
+        private static NativeItem vehicleCheckItem;
+        private static NativeItem callForTowTruckItem;
+        private static NativeItem callForInsuranceItem;
 
         internal static void CreateVehicleManagementMenu()
         {
-            VehicleManagementMenu = new UIMenu("ArrestManager+", "VEHICLE MANAGEMENT");
-            VehicleManagementMenu.AddItem(MenuSwitchListItem);
-            vehicleCheckItem = new UIMenuItem("Request Status Check", "Requests the dispatch to check the status of the nearest vehicle.");
-            VehicleManagementMenu.AddItem(vehicleCheckItem);
-            callForTowTruckItem = new UIMenuItem("Request Tow Service", "Requests a tow truck from dispatch.");
-            VehicleManagementMenu.AddItem(callForTowTruckItem);
-            callForInsuranceItem = new UIMenuItem("Request Insurance Pick-up", "Requests insurance service to pick up the nearest vehicle.");
-            VehicleManagementMenu.AddItem(callForInsuranceItem);
-            VehicleManagementMenu.OnItemSelect += OnItemSelect;
-            VehicleManagementMenu.MouseControlsEnabled = false;
-            VehicleManagementMenu.AllowCameraMovement = true;
+            VehicleManagementMenu = new NativeMenu("ArrestManager+", "VEHICLE MANAGEMENT");
+            VehicleManagementMenu.Add(MenuSwitchListItem);
+
+            vehicleCheckItem = new NativeItem("Request Status Check", "Requests the dispatch to check the status of the nearest vehicle.");
+            VehicleManagementMenu.Add(vehicleCheckItem);
+            vehicleCheckItem.Activated += VehicleCheckItem_Activated;
+
+            callForTowTruckItem = new NativeItem("Request Tow Service", "Requests a tow truck from dispatch.");
+            VehicleManagementMenu.Add(callForTowTruckItem);
+            callForTowTruckItem.Activated += CallForTowTruckItem_Activated;
+
+            callForInsuranceItem = new NativeItem("Request Insurance Pick-up", "Requests insurance service to pick up the nearest vehicle.");
+            VehicleManagementMenu.Add(callForInsuranceItem);
+            callForInsuranceItem.Activated += CallForInsuranceItem_Activated;
+
+            VehicleManagementMenu.UseMouse = false;
+            VehicleManagementMenu.RotateCamera = true;
         }
 
-        public static void OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
+        private static void CallForInsuranceItem_Activated(object sender, EventArgs e)
         {
-            if (sender != VehicleManagementMenu) { return; }
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+            new VehicleManager().RequestInsurance();
+            VehicleManagementMenu.Visible = false;
+        }
 
-            if (selectedItem == callForTowTruckItem)
-            {
-                NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
-                new VehicleManager().TowVehicle();
-                VehicleManagementMenu.Visible = false;
-            }
-            else if (selectedItem == callForInsuranceItem)
-            {
-                NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
-                new VehicleManager().RequestInsurance();
-                VehicleManagementMenu.Visible = false;
-            }
-            else if (selectedItem == vehicleCheckItem)
-            {
-                NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+        private static void CallForTowTruckItem_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+            new VehicleManager().TowVehicle();
+            VehicleManagementMenu.Visible = false;
+        }
 
-                Vehicle[] nearbyvehs = Game.LocalPlayer.Character.GetNearbyVehicles(2);
-                if (nearbyvehs.Length == 0)
+        private static void VehicleCheckItem_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            Vehicle[] nearbyvehs = Game.LocalPlayer.Character.GetNearbyVehicles(2);
+            if (nearbyvehs.Length == 0)
+            {
+                Game.DisplayHelp("There was no vehicle to check");
+                return;
+            }
+
+            var checkingCar = nearbyvehs[0];
+            if (checkingCar == Game.LocalPlayer.Character.CurrentVehicle)
+            {
+                Game.DisplayNotification("Get out of the car, and try again.");
+                return;
+            }
+
+            if (Vector3.Distance(Game.LocalPlayer.Character.Position, checkingCar.Position) > 6f)
+            {
+                Game.DisplayHelp("Nearest vehicle is too far away. Get closer.");
+                return;
+            }
+
+            _ = GameFiber.StartNew(() =>
+            {
+                Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 1000);
+                RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, $"Requesting plate check for ~y~{checkingCar.LicensePlate}");
+                BleepPlayer.Play();
+                GameFiber.Sleep(2500);
+                RadioUtil.DisplayRadioQuote("Dispatch", "10-4, stand by for plate check...");
+
+                GameFiber.Sleep(5000);
+
+                if (!checkingCar)
                 {
-                    Game.DisplayHelp("There was no vehicle to check");
                     return;
                 }
+                var stolen = checkingCar.IsStolen ? "~r~Yes" : "~g~No";
 
-                var checkingCar = nearbyvehs[0];
-                if (checkingCar == Game.LocalPlayer.Character.CurrentVehicle)
-                {
-                    Game.DisplayNotification("Get out of the car, and try again.");
-                    return;
-                }
-
-                if (Vector3.Distance(Game.LocalPlayer.Character.Position, checkingCar.Position) > 6f)
-                {
-                    Game.DisplayHelp("Nearest vehicle is too far away. Get closer.");
-                    return;
-                }
-
-                _ = GameFiber.StartNew(() =>
-                {
-                    Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 1000);
-                    RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, $"Requesting plate check for ~y~{checkingCar.LicensePlate}");
-                    BleepPlayer.Play();
-                    GameFiber.Sleep(2500);
-                    RadioUtil.DisplayRadioQuote("Dispatch", "10-4, stand by for plate check...");
-
-                    GameFiber.Sleep(5000);
-
-                    if (!checkingCar)
-                    {
-                        return;
-                    }
-                    var stolen = checkingCar.IsStolen ? "~r~Yes" : "~g~No";
-
-                    Game.DisplayNotification("commonmenu", "shop_mask_icon_a", "Dispatch", "Vehicle Status", $"Model: ~b~{checkingCar.GetDisplayName()}~w~~n~License Plate: ~y~{checkingCar.LicensePlate}~w~~n~Owner: {Functions.GetVehicleOwnerName(checkingCar)}");
-                    Game.DisplayNotification($"Stolen: {stolen}");
-                });
-            }
+                Game.DisplayNotification("commonmenu", "shop_mask_icon_a", "Dispatch", "Vehicle Status", $"Model: ~b~{checkingCar.GetDisplayName()}~w~~n~License Plate: ~y~{checkingCar.LicensePlate}~w~~n~Owner: {Functions.GetVehicleOwnerName(checkingCar)}");
+                Game.DisplayNotification($"Stolen: {stolen}");
+            });
         }
     }
 }

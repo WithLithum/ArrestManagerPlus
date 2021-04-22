@@ -12,6 +12,7 @@ using Rage.Native;
 using Albo1125.Common.CommonLibrary;
 using Arrest_Manager.Services;
 using RelaperCommons.FirstResponse;
+using LemonUI.Menus;
 
 namespace Arrest_Manager
 {
@@ -84,7 +85,7 @@ namespace Arrest_Manager
                 if (!FollowingPed) return;
 
                 IsGrabEnabled = true;
-                itemGrab.Text = "Let go";
+                itemGrab.Title = "Release Grabbed Ped";
                 itemCallTaxi.Enabled = false;
                 itemFollow.Enabled = false;
                 pedBlip = FollowingPed.AttachBlip();
@@ -182,7 +183,7 @@ namespace Arrest_Manager
 
                 Game.LocalPlayer.Character.Tasks.ClearSecondary();
                 IsGrabEnabled = false;
-                itemGrab.Text = "Grab";
+                itemGrab.Title = "Grab Nearest Ped";
                 if (pedBlip.Exists()) { pedBlip.Delete(); }
                 itemCallTaxi.Enabled = true;
                 itemFollow.Enabled = true;
@@ -201,7 +202,7 @@ namespace Arrest_Manager
                 
                 PedBlip.Flash(400, -1);
                 IsFollowingEnabled = true;
-                itemFollow.Text = "Stop follow";
+                itemFollow.Title = "Ask to Stop Following";
                 itemCallTaxi.Enabled = false;
                 itemGrab.Enabled = false;
 
@@ -234,7 +235,7 @@ namespace Arrest_Manager
                     FollowingPed.Tasks.StandStill(7000);
                 }
                 IsFollowingEnabled = false;
-                itemFollow.Text = "Follow";
+                itemFollow.Title = "Ask to Follow";
                 if (PedBlip.Exists()) { PedBlip.Delete(); }
                 itemCallTaxi.Enabled = true;
                 itemGrab.Enabled = true;
@@ -282,93 +283,110 @@ namespace Arrest_Manager
             });
         }
 
-        internal static UIMenu PedManagementMenu { get; private set; }
-        private static UIMenuItem itemCheckId;
-        private static UIMenuItem itemFollow;
-        private static UIMenuItem itemGrab;
-        private static UIMenuItem itemCallTaxi;
-        private static UIMenuItem itemRequestCoroner;
+        internal static NativeMenu PedManagementMenu { get; private set; }
+        private static NativeItem itemCheckId;
+        private static NativeItem itemFollow;
+        private static NativeItem itemGrab;
+        private static NativeItem itemCallTaxi;
+        private static NativeItem itemRequestCoroner;
 
         public static void CreatePedManagementMenu()
         {
-            PedManagementMenu = new UIMenu("ArrestManager+", "PED MANAGEMENT");
-            itemCheckId = new UIMenuItem("Request Status Check", "Requests status check of the nearest ped from dispatch.");
-            itemFollow = new UIMenuItem("Ask to Follow", "Asks the nearest ped to follow the player.");
-            itemGrab = new UIMenuItem("Grab Nearest Ped", "Grabs the nearest ped.");
-            itemCallTaxi = new UIMenuItem("Request Taxi Escort", "Requests a taxi to pick up the target.");
-            itemRequestCoroner = new UIMenuItem("Request Coroner Unit", "Calls a coroner to deal with all nearby dead people.");
+            PedManagementMenu = new NativeMenu("ArrestManager+", "PED MANAGEMENT");
+            itemCheckId = new NativeItem("Request Status Check", "Requests status check of the nearest ped from dispatch.");
+            itemFollow = new NativeItem("Ask to Follow", "Asks the nearest ped to follow the player.");
+            itemGrab = new NativeItem("Grab Nearest Ped", "Grabs the nearest ped.");
+            itemCallTaxi = new NativeItem("Request Taxi Escort", "Requests a taxi to pick up the target.");
+            itemRequestCoroner = new NativeItem("Request Coroner Unit", "Calls a coroner to deal with all nearby dead people.");
 
-            PedManagementMenu.AddItem(SceneManager.MenuSwitchListItem);
-            PedManagementMenu.AddItems(itemCheckId, itemCallTaxi, itemRequestCoroner, itemFollow, itemGrab);
+            PedManagementMenu.Add(SceneManager.MenuSwitchListItem);
+            PedManagementMenu.Add(itemCheckId);
+            PedManagementMenu.Add(itemCallTaxi);
+            PedManagementMenu.Add(itemRequestCoroner);
+            PedManagementMenu.Add(itemGrab);
+            PedManagementMenu.Add(itemFollow);
 
-            PedManagementMenu.RefreshIndex();
-            PedManagementMenu.MouseControlsEnabled = false;
-            PedManagementMenu.AllowCameraMovement = true;
-            PedManagementMenu.OnItemSelect += OnItemSelect;
+            itemCheckId.Activated += ItemCheckId_Activated;
+            itemCallTaxi.Activated += ItemCallTaxi_Activated;
+            itemRequestCoroner.Activated += ItemRequestCoroner_Activated;
+            itemGrab.Activated += ItemGrab_Activated;
+            itemFollow.Activated += ItemFollow_Activated;
+
+            PedManagementMenu.UseMouse = false;
+            PedManagementMenu.RotateCamera = true;
+
         }
 
-        public static void OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
+        private static void ItemFollow_Activated(object sender, EventArgs e)
         {
-            if (sender != PedManagementMenu) { return; }
-            Rage.Native.NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
-            if (selectedItem == itemFollow)
-            {
-                if (!IsFollowingEnabled)
-                {
-                    MakePedFollowPlayer();
-                }
-                else
-                {
-                    IsFollowingEnabled = false;
-                }
-            }
-            else if (selectedItem == itemGrab)
-            {
-                if (!IsGrabEnabled)
-                {
-                    if (!grabShortcutMessageShown)
-                    {
-                        Game.DisplayNotification("You can also grab suspects by pressing ~b~" + EntryPoint.KeyConvert.ConvertToString(GrabPedKey) + " " + EntryPoint.KeyConvert.ConvertToString(GrabPedModifierKey));
-                    }
-                    GrabPed();
-                }
-                else
-                {
-                    IsGrabEnabled = false;
-                }
-            }
-            else if (selectedItem == itemCallTaxi)
-            {
-                new Taxi().CallTaxi();
-                PedManagementMenu.Visible = false;
-                //taxi
-            }
-            else if (selectedItem == itemRequestCoroner)
-            {
-                SceneManager.CallCoronerTime = true;
-                sender.Visible = false;
-            }
-            else if (selectedItem == itemCheckId)
-            {
-                var ped = GetNearestValidPed(allowStopped: true, subtitleDisplayTime: 3000);
-                if (!ped)
-                {
-                    return;
-                }
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
 
-                GameFiber.StartNew(() =>
-                {
-                    var persona = Functions.GetPersonaForPed(ped);
-                    Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 3000);
-                    RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, $"Requesting status check for ~y~{persona.FullName}~w~, born on ~b~{persona.Birthday}");
-                    SceneManager.BleepPlayer.Play();
-                    GameFiber.Sleep(3500);
-                    RadioUtil.DisplayRadioQuote("Dispatch", "10-4, stand by...");
-                    GameFiber.Sleep(1000);
-
-                    Functions.DisplayPedId(ped, false);
-                });
+            if (!IsFollowingEnabled)
+            {
+                MakePedFollowPlayer();
             }
+            else
+            {
+                IsFollowingEnabled = false;
+            }
+        }
+
+        private static void ItemGrab_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            if (!IsGrabEnabled)
+            {
+                if (!grabShortcutMessageShown)
+                {
+                    Game.DisplayNotification("You can also grab suspects by pressing ~b~" + EntryPoint.KeyConvert.ConvertToString(GrabPedKey) + " " + EntryPoint.KeyConvert.ConvertToString(GrabPedModifierKey));
+                }
+                GrabPed();
+            }
+            else
+            {
+                IsGrabEnabled = false;
+            }
+        }
+
+        private static void ItemRequestCoroner_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            SceneManager.CallCoronerTime = true;
+            PedManagementMenu.Visible = false;
+        }
+
+        private static void ItemCallTaxi_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            new Taxi().CallTaxi();
+            PedManagementMenu.Visible = false;
+        }
+
+        private static void ItemCheckId_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            var ped = GetNearestValidPed(allowStopped: true, subtitleDisplayTime: 3000);
+            if (!ped)
+            {
+                return;
+            }
+
+            GameFiber.StartNew(() =>
+            {
+                var persona = Functions.GetPersonaForPed(ped);
+                Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 3000);
+                RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, $"Requesting status check for ~y~{persona.FullName}~w~, born on ~b~{persona.Birthday}");
+                SceneManager.BleepPlayer.Play();
+                GameFiber.Sleep(3500);
+                RadioUtil.DisplayRadioQuote("Dispatch", "10-4, stand by...");
+                GameFiber.Sleep(1000);
+
+                Functions.DisplayPedId(ped, false);
+            });
         }
     }
 }
