@@ -5,14 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Rage;
 using System.Windows.Forms;
-using RAGENativeUI.Elements;
-using RAGENativeUI;
 using LSPD_First_Response.Mod.API;
 using Rage.Native;
 using Albo1125.Common.CommonLibrary;
 using Arrest_Manager.Services;
 using RelaperCommons.FirstResponse;
 using LemonUI.Menus;
+using static Arrest_Manager.SceneManager;
 
 namespace Arrest_Manager
 {
@@ -292,19 +291,17 @@ namespace Arrest_Manager
 
         public static void CreatePedManagementMenu()
         {
-            PedManagementMenu = new NativeMenu("ArrestManager+", "PED MANAGEMENT");
             itemCheckId = new NativeItem("Request Status Check", "Requests status check of the nearest ped from dispatch.");
             itemFollow = new NativeItem("Ask to Follow", "Asks the nearest ped to follow the player.");
             itemGrab = new NativeItem("Grab Nearest Ped", "Grabs the nearest ped.");
             itemCallTaxi = new NativeItem("Request Taxi Escort", "Requests a taxi to pick up the target.");
             itemRequestCoroner = new NativeItem("Request Coroner Unit", "Calls a coroner to deal with all nearby dead people.");
 
-            PedManagementMenu.Add(SceneManager.MenuSwitchListItem);
-            PedManagementMenu.Add(itemCheckId);
-            PedManagementMenu.Add(itemCallTaxi);
-            PedManagementMenu.Add(itemRequestCoroner);
-            PedManagementMenu.Add(itemGrab);
-            PedManagementMenu.Add(itemFollow);
+            ManagementMenu.Add(itemCheckId);
+            ManagementMenu.Add(itemCallTaxi);
+            ManagementMenu.Add(itemRequestCoroner);
+            ManagementMenu.Add(itemGrab);
+            ManagementMenu.Add(itemFollow);
 
             itemCheckId.Activated += ItemCheckId_Activated;
             itemCallTaxi.Activated += ItemCallTaxi_Activated;

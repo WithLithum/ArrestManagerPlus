@@ -650,23 +650,20 @@ namespace Arrest_Manager
 
         internal static void CreateVehicleManagementMenu()
         {
-            VehicleManagementMenu = new NativeMenu("ArrestManager+", "VEHICLE MANAGEMENT");
-            VehicleManagementMenu.Add(MenuSwitchListItem);
-
             vehicleCheckItem = new NativeItem("Request Status Check", "Requests the dispatch to check the status of the nearest vehicle.");
-            VehicleManagementMenu.Add(vehicleCheckItem);
+            ManagementMenu.Add(vehicleCheckItem);
             vehicleCheckItem.Activated += VehicleCheckItem_Activated;
 
             callForTowTruckItem = new NativeItem("Request Tow Service", "Requests a tow truck from dispatch.");
-            VehicleManagementMenu.Add(callForTowTruckItem);
+            ManagementMenu.Add(callForTowTruckItem);
             callForTowTruckItem.Activated += CallForTowTruckItem_Activated;
 
             callForInsuranceItem = new NativeItem("Request Insurance Pick-up", "Requests insurance service to pick up the nearest vehicle.");
-            VehicleManagementMenu.Add(callForInsuranceItem);
+            ManagementMenu.Add(callForInsuranceItem);
             callForInsuranceItem.Activated += CallForInsuranceItem_Activated;
 
-            VehicleManagementMenu.UseMouse = false;
-            VehicleManagementMenu.RotateCamera = true;
+            ManagementMenu.UseMouse = false;
+            ManagementMenu.RotateCamera = true;
         }
 
         private static void CallForInsuranceItem_Activated(object sender, EventArgs e)

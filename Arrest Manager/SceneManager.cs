@@ -16,6 +16,7 @@ namespace Arrest_Manager
     {
         public static readonly System.Media.SoundPlayer BleepPlayer = new System.Media.SoundPlayer("LSPDFR/audio/scanner/Arrest Manager Audio/RADIO_BLIP.wav");
         private static Rage.Object MobilePhone;
+        internal static readonly NativeMenu ManagementMenu = new NativeMenu("ArrestManager+", "Scene Manager");
 
         public static void ToggleMobilePhone(Ped ped, bool toggle)
         {
@@ -275,42 +276,15 @@ namespace Arrest_Manager
 
         private static ObjectPool _menuPool;
         private static NativeMenu ActiveMenu = PedManagementMenu;
-        internal static NativeListItem<dynamic> MenuSwitchListItem { get; private set; }
         public static void CreateMenus()
         {
             _menuPool = new ObjectPool();
-            List<dynamic> menus = new List<dynamic>() { "Ped Manager", "Vehicle Manager" };
-            MenuSwitchListItem = new NativeListItem<dynamic>("Scene Management", menus);
-            MenuSwitchListItem.Activated += MenuSwitchListItem_Activated;
             CreatePedManagementMenu();
-
-            _menuPool.Add(PedManagementMenu);
             CreateVehicleManagementMenu();
-            _menuPool.Add(VehicleManagementMenu);
             Game.FrameRender += Process;
+
+            _menuPool.Add(ManagementMenu);
             MainLogic();
-        }
-
-        private static void MenuSwitchListItem_Activated(object sender, EventArgs e)
-        {
-            string selectedMenuString = MenuSwitchListItem.Items[MenuSwitchListItem.SelectedIndex].ToString();
-            NativeMenu selected;
-
-            if (selectedMenuString == "Ped Manager")
-            {
-                selected = PedManagementMenu;
-            }
-            else
-            {
-                selected = VehicleManagementMenu;
-            }
-
-            if (ActiveMenu != selected)
-            {
-                ActiveMenu.Visible = false;
-                selected.Visible = true;
-                ActiveMenu = selected;
-            }
         }
 
         internal static bool CallCoronerTime { get; set; }
@@ -324,14 +298,7 @@ namespace Arrest_Manager
 
                     if ((ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementModifierKey) || (EntryPoint.SceneManagementModifierKey == Keys.None)) && ExtensionMethods.IsKeyDownComputerCheck(EntryPoint.SceneManagementKey))
                     {
-                        if (ActiveMenu != null)
-                        {
-                            ActiveMenu.Visible = !ActiveMenu.Visible;
-                        }
-                        else
-                        {
-                            PedManagementMenu.Visible = !PedManagementMenu.Visible;
-                        }
+                        ManagementMenu.Visible = !ManagementMenu.Visible;
                     }
 
                     if (_menuPool.AreAnyVisible)
