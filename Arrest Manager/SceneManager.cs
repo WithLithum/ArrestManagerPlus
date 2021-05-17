@@ -16,7 +16,7 @@ namespace Arrest_Manager
     {
         public static readonly System.Media.SoundPlayer BleepPlayer = new System.Media.SoundPlayer("LSPDFR/audio/scanner/Arrest Manager Audio/RADIO_BLIP.wav");
         private static Rage.Object MobilePhone;
-        internal static readonly NativeMenu ManagementMenu = new NativeMenu("ArrestManager+", "Scene Manager");
+        internal static NativeMenu ManagementMenu { get; private set; }
 
         public static void ToggleMobilePhone(Ped ped, bool toggle)
         {
@@ -275,10 +275,12 @@ namespace Arrest_Manager
         }
 
         private static ObjectPool _menuPool;
-        private static NativeMenu ActiveMenu = PedManagementMenu;
+
         public static void CreateMenus()
         {
             _menuPool = new ObjectPool();
+            ManagementMenu = new NativeMenu("ArrestManager+", "Scene Manager");
+
             CreatePedManagementMenu();
             CreateVehicleManagementMenu();
             Game.FrameRender += Process;
