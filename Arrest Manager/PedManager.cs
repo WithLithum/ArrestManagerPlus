@@ -308,10 +308,6 @@ namespace Arrest_Manager
             itemRequestCoroner.Activated += ItemRequestCoroner_Activated;
             itemGrab.Activated += ItemGrab_Activated;
             itemFollow.Activated += ItemFollow_Activated;
-
-            PedManagementMenu.UseMouse = false;
-            PedManagementMenu.RotateCamera = true;
-
         }
 
         private static void ItemFollow_Activated(object sender, EventArgs e)
