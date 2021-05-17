@@ -642,8 +642,6 @@ namespace Arrest_Manager
               });
         }
 
-        internal static NativeMenu VehicleManagementMenu { get; private set; }
-
         private static NativeItem vehicleCheckItem;
         private static NativeItem callForTowTruckItem;
         private static NativeItem callForInsuranceItem;
@@ -670,14 +668,14 @@ namespace Arrest_Manager
         {
             NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
             new VehicleManager().RequestInsurance();
-            VehicleManagementMenu.Visible = false;
+            ManagementMenu.Visible = false;
         }
 
         private static void CallForTowTruckItem_Activated(object sender, EventArgs e)
         {
             NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
             new VehicleManager().TowVehicle();
-            VehicleManagementMenu.Visible = false;
+            ManagementMenu.Visible = false;
         }
 
         private static void VehicleCheckItem_Activated(object sender, EventArgs e)

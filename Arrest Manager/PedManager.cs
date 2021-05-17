@@ -282,7 +282,6 @@ namespace Arrest_Manager
             });
         }
 
-        internal static NativeMenu PedManagementMenu { get; private set; }
         private static NativeItem itemCheckId;
         private static NativeItem itemFollow;
         private static NativeItem itemGrab;
@@ -347,7 +346,7 @@ namespace Arrest_Manager
             NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
 
             SceneManager.CallCoronerTime = true;
-            PedManagementMenu.Visible = false;
+            ManagementMenu.Visible = false;
         }
 
         private static void ItemCallTaxi_Activated(object sender, EventArgs e)
@@ -355,7 +354,7 @@ namespace Arrest_Manager
             NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
 
             new Taxi().CallTaxi();
-            PedManagementMenu.Visible = false;
+            ManagementMenu.Visible = false;
         }
 
         private static void ItemCheckId_Activated(object sender, EventArgs e)
