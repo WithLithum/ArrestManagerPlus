@@ -1,11 +1,6 @@
 # Arrest Manager+
 
-> ⚠️**RelaperCrystal: Update June 23, 2021**
-> 
-> I'm moving GitHub repositories over to Azure DevOps. See my new workspace here: https://dev.azure.com/RelaperDev
-> <br /> This repository is getting archived.
-
-This is RelaperCrystal's fork of the original Arrest Manager project after the project itself was left alone for nearly two years.
+This is WithLithum's fork of the original Arrest Manager project after the project itself was on hiatus for nearly two years.
 
 **To be clear, this name is temponary. The code is no longer related to arrest - More Jail Points and Prisoner Transporter features has been removed. I plans to rename the project.**
 
@@ -20,6 +15,10 @@ You should be able to actually read the code easier as I cleaned a lot of codes 
 >                                                                                                 -- Albo1125
 
 Please, respect the license - even copying a smaller part directly from this project **is propagating (in GPLv3)**. This means that copyleft **applies to any part of code, whether it's small or big**.
+
+## Contributions
+
+You will need to fork this repository, commit your changes and make merge request.
 
 ## Building
 
