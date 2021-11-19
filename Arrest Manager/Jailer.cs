@@ -243,11 +243,6 @@ namespace Arrest_Manager
             Game.LogTrivial("AM+: Loaded ArrestManager+ phase 1");
             IsLSPDFRPlusRunning = IsLSPDFRPluginRunning("LSPDFR+", new Version("1.7.0.0"));
 
-            if (IsLSPDFRPluginRunning("PoliceSmartRadio"))
-            {
-                API.SmartRadioFuncs.AddActionToButton(Coroner.CallFromSmartRadio, Coroner.CanBeCalled, "coroner");
-                API.SmartRadioFuncs.AddActionToButton(VehicleManager.SmartRadioTow, "tow");
-            }
             MessageReceived = false;
             CanChoose = true;
             CheckForJail = true;
