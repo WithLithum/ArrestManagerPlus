@@ -41,54 +41,5 @@ namespace Arrest_Manager.API
         {
             PoliceSmartRadio.API.Functions.ButtonSelected += handler;
         }
-
-
-        public static void RequestTransport()
-        {
-            if (EntryPoint.canChoose && EntryPoint.suspectAPI != null && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.suspectAPI) && !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.suspectAPI))
-            {
-                if (EntryPoint.twoSuspectsApi.Count == 2 && !ExtensionMethods.IsPointOnWater(Game.LocalPlayer.Character.Position))
-                {
-
-                    if (EntryPoint.twoSuspectsApi[0].Exists() && EntryPoint.twoSuspectsApi[1].Exists() && EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.twoSuspectsApi[0]) &&
-                        EntryPoint.suspectsArrestedByPlayer.Contains(EntryPoint.twoSuspectsApi[1]) && !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.twoSuspectsApi[0]) &&
-                            !EntryPoint.suspectsPendingTransport.Contains(EntryPoint.twoSuspectsApi[1]))
-                    {
-
-                        if (Vector3.Distance(EntryPoint.twoSuspectsApi[0].Position, EntryPoint.twoSuspectsApi[1].Position) < 25f)
-                        {
-                            Game.LogTrivial("API detected multi transport - calling");
-                            EntryPoint.TransportMenu.Visible = true;
-                            EntryPoint.TransportMenu.CurrentSelection = 2;
-                            return;
-
-                        }
-                    }
-                }
-
-                EntryPoint.canChoose = false;
-                Game.LogTrivial("API detected single transport - calling");
-                Game.RemoveNotification(EntryPoint.multiVanOnStandbyMsg);
-                Game.RemoveNotification(EntryPoint.vanOnStandbyMsg);
-                Ped officer;
-                Vehicle van;
-                if (EntryPoint.RecruitNearbyOfficer(out officer, out van))
-                {
-                    Game.LogTrivial("Recruited Officer");
-                    EntryPoint.SuspectTransporterRecruitedOfficer(officer, van, false);
-                }
-                else if (ExtensionMethods.IsPointOnWater(Game.LocalPlayer.Character.Position))
-                {
-                    Game.LogTrivial("API detected boat transport.");
-                    EntryPoint.BoatTransport(anims:false);
-                }
-                else
-                {
-                    EntryPoint.SuspectTransporterNewOfficer(anims:false);
-                }
-            }
-
-
-        }
     }
 }

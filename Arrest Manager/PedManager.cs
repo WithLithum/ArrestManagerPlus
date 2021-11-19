@@ -5,107 +5,111 @@ using System.Text;
 using System.Threading.Tasks;
 using Rage;
 using System.Windows.Forms;
-using RAGENativeUI.Elements;
-using RAGENativeUI;
 using LSPD_First_Response.Mod.API;
 using Rage.Native;
-using static Arrest_Manager.SceneManager;
 using Albo1125.Common.CommonLibrary;
+using Arrest_Manager.Services;
+using RelaperCommons.FirstResponse;
+using LemonUI.Menus;
+using static Arrest_Manager.SceneManager;
 
 namespace Arrest_Manager
 {
-    internal class PedManager
+    internal static class PedManager
     {
-        private static Rage.Task FollowTask;
+        private static bool grabShortcutMessageShown;
+        internal static bool IsGrabEnabled { get; set; }
+        internal static bool IsFollowingEnabled { get; set; }
+        internal static Ped FollowingPed { get; private set; }
 
-        public static Keys GrabPedKey = Keys.T;
-        public static Keys GrabPedModifierKey = Keys.LShiftKey;
-        public static Keys TackleKey = Keys.E;
-        public static ControllerButtons TackleButton = ControllerButtons.A;
+        internal static Keys GrabPedKey { get; set; } = Keys.T;
+        internal static Keys GrabPedModifierKey { get; set; } = Keys.LShiftKey;
+        internal static Keys TackleKey { get; set; } = Keys.E;
+        internal static ControllerButtons TackleButton { get; set; } = ControllerButtons.A;
 
-        public static Keys PlacePedInVehicleKey = Keys.G;
+        internal static Keys PlacePedInVehicleKey { get; set; } = Keys.G;
 
-        public static Ped GetNearestValidPed(float Radius = 2.5f, bool allowPursuitPeds = false, int subtitleDisplayTime = 3000)
+        public static Ped GetNearestValidPed(float radius = 2.5f, bool allowPursuitPeds = false, bool allowStopped = false, bool allowInVehicle = false, int subtitleDisplayTime = 8000)
         {
             if (Game.LocalPlayer.Character.GetNearbyPeds(1).Length == 0 || Game.LocalPlayer.Character.IsInAnyVehicle(false)) { return null; }
-            Ped nearestped = Game.LocalPlayer.Character.GetNearbyPeds(1)[0];
+            var nearestPed = Game.LocalPlayer.Character.GetNearbyPeds(1)[0];
 
-            if (nearestped.RelationshipGroup == "COP")
+            if (Functions.IsPedACop(nearestPed))
             {
-                if (Game.LocalPlayer.Character.GetNearbyPeds(2).Length >= 2) { nearestped = Game.LocalPlayer.Character.GetNearbyPeds(2)[1]; }
-                if (nearestped.RelationshipGroup == "COP")
+                if (Game.LocalPlayer.Character.GetNearbyPeds(2).Length >= 2) { nearestPed = Game.LocalPlayer.Character.GetNearbyPeds(2)[1]; }
+                if (Functions.IsPedACop(nearestPed))
                 {
                     return null;
                 }
             }
-            if (Vector3.Distance(Game.LocalPlayer.Character.Position, nearestped.Position) > Radius) { Game.DisplaySubtitle("Get closer to the ped", subtitleDisplayTime); return null; }
-            if (!allowPursuitPeds && Functions.GetActivePursuit() != null)
+
+            if (Vector3.Distance(Game.LocalPlayer.Character.Position, nearestPed.Position) > radius) { Game.DisplaySubtitle("Get closer to the ped", subtitleDisplayTime); return null; }
+            if (!allowPursuitPeds && Functions.GetActivePursuit() != null && Functions.GetPursuitPeds(Functions.GetActivePursuit()).Contains(nearestPed))
             {
-                if (Functions.GetPursuitPeds(Functions.GetActivePursuit()).Contains(nearestped)) { return null; }
+                return null;
             }
-            if (Functions.IsPedStoppedByPlayer(nearestped)) { Game.DisplaySubtitle("~r~Ped is currently stopped. Issue a warning first.", subtitleDisplayTime); return null; }
-            if (nearestped.IsInAnyVehicle(false)) { Game.DisplaySubtitle("Remove ped from vehicle", subtitleDisplayTime); return null; }
-            if (!nearestped.IsHuman) { Game.DisplaySubtitle("Ped isn't human...", subtitleDisplayTime); return null; }
-            if (Functions.IsPedGettingArrested(nearestped) && !Functions.IsPedArrested(nearestped)) { return null; }
-            return nearestped;
+
+            if (Functions.IsPedStoppedByPlayer(nearestPed) && !allowStopped)
+            {
+                Game.DisplayHelp("To grab this subject, you must dismiss them from stop (on foot) first.", subtitleDisplayTime);
+                return null;
+            }
+
+            if (nearestPed.IsInAnyVehicle(false) && !allowInVehicle)
+            {
+                Game.DisplayHelp("Suspects in vehicle cannot be grabbed.", subtitleDisplayTime);
+                return null;
+            }
+
+            if (!nearestPed.IsHuman)
+            {
+                Game.DisplayHelp("Animals cannot be grabbed.", subtitleDisplayTime);
+            }
+
+            if (Functions.IsPedGettingArrested(nearestPed) && !Functions.IsPedArrested(nearestPed)) { return null; }
+            return nearestPed;
         }
 
         public static void RequestTransportToHospitalForNearestPed()
         {
-            GameFiber.StartNew(delegate
-            {
-                
-                Ped pedtotransport = GetNearestValidPed(3.5f);
-                if (pedtotransport.Exists())
-                {
-                    if (Functions.IsPedArrested(pedtotransport))
-                    {
-                        pedtotransport = pedtotransport.ClonePed(true);
-                        pedtotransport.Tasks.PlayAnimation("mp_arresting", "idle", 8f, AnimationFlags.UpperBodyOnly | AnimationFlags.SecondaryTask | AnimationFlags.Loop);
-                    }
-                    Functions.SetPedCantBeArrestedByPlayer(pedtotransport, true);
-                    API.BetterEMSFuncs.RequestTransportToHospitalForNearestValidPed(pedtotransport);
-                }
-            });
+            Game.DisplayHelp("This function is deprecated.");
         }
 
-        public static bool GrabShortcutMessageShown = false;
-        public static bool EnableGrab = false;
         public static void GrabPed()
         {
-            Blip PedBlip;
-            GameFiber.StartNew(delegate
+            Blip pedBlip;
+            GameFiber.StartNew(() =>
             {
-                pedfollowing = GetNearestValidPed();
-                if (!pedfollowing) { return; }
+                FollowingPed = GetNearestValidPed();
+                if (!FollowingPed) return;
 
-                EnableGrab = true;
-                GrabItem.Text = "Let go";
-                CallTaxiItem.Enabled = false;
-                FollowItem.Enabled = false;
-                PedBlip = pedfollowing.AttachBlip();
-                PedBlip.Color = System.Drawing.Color.Yellow;
-                GrabShortcutMessageShown = true;
-                PedBlip.Flash(400, -1);
-                pedfollowing.Rotation = Game.LocalPlayer.Character.Rotation;
+                IsGrabEnabled = true;
+                itemGrab.Title = "Release Grabbed Ped";
+                itemCallTaxi.Enabled = false;
+                itemFollow.Enabled = false;
+                pedBlip = FollowingPed.AttachBlip();
+                pedBlip.Color = System.Drawing.Color.Yellow;
+                grabShortcutMessageShown = true;
+                pedBlip.Flash(400, -1);
+                FollowingPed.Rotation = Game.LocalPlayer.Character.Rotation;
                 Game.LocalPlayer.Character.Tasks.PlayAnimation("doors@", "door_sweep_r_hand_medium", 9f, AnimationFlags.StayInEndFrame | AnimationFlags.SecondaryTask | AnimationFlags.UpperBodyOnly).WaitForCompletion(2000);
 
                 if (EntryPoint.IsLSPDFRPlusRunning)
                 {
-                    API.LSPDFRPlusFuncs.AddCountToStatistic(Main.PluginName, "People grabbed");
+                    API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "People grabbed");
                 }
-                pedfollowing.Tasks.ClearImmediately();
+                FollowingPed.Tasks.ClearImmediately();
 
-                NativeFunction.Natives.ATTACH_ENTITY_TO_ENTITY(pedfollowing, Game.LocalPlayer.Character, (int)PedBoneId.RightHand, 0.2f, 0.4f, 0f, 0f, 0f, 0f, true, true, false, false, 2, true);
-                API.Functions.OnPlayerGrabbedPed(pedfollowing);
+                NativeFunction.Natives.ATTACH_ENTITY_TO_ENTITY(FollowingPed, Game.LocalPlayer.Character, (int)PedBoneId.RightHand, 0.2f, 0.4f, 0f, 0f, 0f, 0f, true, true, false, false, 2, true);
+                API.Functions.OnPlayerGrabbedPed(FollowingPed);
                 while (true)
                 {
                     GameFiber.Yield();
-                    if (!pedfollowing.Exists()) { break; }
-                    NativeFunction.Natives.ATTACH_ENTITY_TO_ENTITY(pedfollowing, Game.LocalPlayer.Character, (int)PedBoneId.RightHand, 0.2f, 0.4f, 0f, 0f, 0f, 0f, true, true, false, false, 2, true);
-                    if (Game.LocalPlayer.Character.GetNearbyVehicles(1).Length > 0 && Functions.IsPedArrested(pedfollowing))
+                    if (!FollowingPed.Exists()) break;
+                    NativeFunction.Natives.ATTACH_ENTITY_TO_ENTITY(FollowingPed, Game.LocalPlayer.Character, (int)PedBoneId.RightHand, 0.2f, 0.4f, 0f, 0f, 0f, 0f, true, true, false, false, 2, true);
+                    if (Game.LocalPlayer.Character.GetNearbyVehicles(1).Length > 0 && Functions.IsPedArrested(FollowingPed))
                     {
-                        Vehicle nearestveh = Game.LocalPlayer.Character.GetNearbyVehicles(1)[0];
+                        var nearestveh = Game.LocalPlayer.Character.GetNearbyVehicles(1)[0];
 
                         if (Game.LocalPlayer.Character.DistanceTo(nearestveh.Position) < 3.9f && nearestveh.PassengerCapacity >= 3)
                         {
@@ -117,7 +121,7 @@ namespace Arrest_Manager
                             }
                             if (nearestveh.IsSeatFree(SeatToPutInto))
                             {
-                                Game.DisplayHelp("Press ~b~" + EntryPoint.kc.ConvertToString(PlacePedInVehicleKey) + "~s~ to place the suspect in the vehicle.");
+                                Game.DisplayHelp("Press ~b~" + EntryPoint.KeyConvert.ConvertToString(PlacePedInVehicleKey) + "~s~ to place the suspect in the vehicle.");
                                 if (Game.IsKeyDown(PlacePedInVehicleKey))
                                 {
                                     if (nearestveh.GetDoors().Length > SeatToPutInto + 1)
@@ -129,103 +133,92 @@ namespace Arrest_Manager
                                             GameFiber.Wait(1000);
                                             waitCount++;
 
-                                            if (nearestveh.Doors[SeatToPutInto + 1].IsOpen || waitCount >= 6 || pedfollowing.IsInVehicle(nearestveh, false))
+                                            if (nearestveh.Doors[SeatToPutInto + 1].IsOpen || waitCount >= 6 || FollowingPed.IsInVehicle(nearestveh, false))
                                             {
-                                                pedfollowing.Detach();
+                                                FollowingPed.Detach();
                                                 GameFiber.Sleep(500);
                                                 break;
                                             }
-                                            if (pedfollowing.Exists())
+                                            if (FollowingPed.Exists() && !FollowingPed.IsDead)
                                             {
-                                                if (!pedfollowing.IsDead)
-                                                {
-                                                    NativeFunction.Natives.TASK_OPEN_VEHICLE_DOOR(Game.LocalPlayer.Character, nearestveh, 6000f, SeatToPutInto, 1.47f);
-
-                                                }
+                                                NativeFunction.Natives.TASK_OPEN_VEHICLE_DOOR(Game.LocalPlayer.Character, nearestveh, 6000f, SeatToPutInto, 1.47f);
                                             }
                                         }
                                     }
 
-                                    pedfollowing.Detach();
-                                    pedfollowing.Tasks.EnterVehicle(nearestveh, 4000, SeatToPutInto).WaitForCompletion();
-                                    if (!pedfollowing.IsInVehicle(nearestveh, false))
+                                    FollowingPed.Detach();
+                                    FollowingPed.Tasks.EnterVehicle(nearestveh, 4000, SeatToPutInto).WaitForCompletion();
+                                    if (!FollowingPed.IsInVehicle(nearestveh, false))
                                     {
                                         if (Game.LocalPlayer.Character.IsInVehicle(nearestveh, false) && Game.LocalPlayer.Character.SeatIndex == SeatToPutInto)
                                         {
                                             Game.LocalPlayer.Character.Tasks.ClearImmediately();
                                         }
-                                        pedfollowing.WarpIntoVehicle(nearestveh, SeatToPutInto);
+                                        FollowingPed.WarpIntoVehicle(nearestveh, SeatToPutInto);
                                     }
                                     break;
                                 }
                             }
                         }
                     }
-                    //NativeFunction.Natives<uint>("SET_PLAYER_SPRINT", Game.LocalPlayer, false);
+
                     if (!NativeFunction.Natives.IS_ENTITY_PLAYING_ANIM<bool>(Game.LocalPlayer.Character, "doors@", "door_sweep_r_hand_medium", 3))
                     {
                         Game.LocalPlayer.Character.Tasks.PlayAnimation("doors@", "door_sweep_r_hand_medium", 9f, AnimationFlags.StayInEndFrame | AnimationFlags.SecondaryTask | AnimationFlags.UpperBodyOnly);
                     }
-                    if (!EnableGrab || Game.LocalPlayer.Character.IsInAnyVehicle(false) || pedfollowing.IsInAnyVehicle(true) || Game.LocalPlayer.Character.DistanceTo(pedfollowing) > 4f)
+                    if (!IsGrabEnabled || Game.LocalPlayer.Character.IsInAnyVehicle(false) || FollowingPed.IsInAnyVehicle(true) || Game.LocalPlayer.Character.DistanceTo(FollowingPed) > 4f)
                     {
                         
                         break;
                     }
 
                 }
-                if (pedfollowing.Exists())
+
+                if (FollowingPed.Exists() && !FollowingPed.IsInAnyVehicle(false))
                 {
-                    if (!pedfollowing.IsInAnyVehicle(false))
-                    {
-                        pedfollowing.Detach();
-                        pedfollowing.Tasks.StandStill(7000);
-                    }
+                    FollowingPed.Detach();
+                    FollowingPed.Tasks.StandStill(7000);
                 }
-                
+
                 Game.LocalPlayer.Character.Tasks.ClearSecondary();
-                EnableGrab = false;
-                GrabItem.Text = "Grab";
-                if (PedBlip.Exists()) { PedBlip.Delete(); }
-                CallTaxiItem.Enabled = true;
-                FollowItem.Enabled = true;
+                IsGrabEnabled = false;
+                itemGrab.Title = "Grab Nearest Ped";
+                if (pedBlip.Exists()) { pedBlip.Delete(); }
+                itemCallTaxi.Enabled = true;
+                itemFollow.Enabled = true;
             });
         }
 
-        private static bool EnableFollow;
-        public static Ped pedfollowing { get; private set; }
         public static void MakePedFollowPlayer()
         {
             Blip PedBlip;
             GameFiber.StartNew(delegate
             {
-                pedfollowing = GetNearestValidPed();
-                if (!pedfollowing) { return; }
-                PedBlip = pedfollowing.AttachBlip();
+                FollowingPed = GetNearestValidPed();
+                if (!FollowingPed) { return; }
+                PedBlip = FollowingPed.AttachBlip();
                 PedBlip.Color = System.Drawing.Color.Yellow;
                 
                 PedBlip.Flash(400, -1);
-                EnableFollow = true;
-                FollowItem.Text = "Stop follow";
-                CallTaxiItem.Enabled = false;
-                GrabItem.Enabled = false;
-                if (TransportToHospitalItem != null)
-                {
-                    TransportToHospitalItem.Enabled = false;
-                }
+                IsFollowingEnabled = true;
+                itemFollow.Title = "Ask to Stop Following";
+                itemCallTaxi.Enabled = false;
+                itemGrab.Enabled = false;
+
                 if (EntryPoint.IsLSPDFRPlusRunning)
                 {
-                    API.LSPDFRPlusFuncs.AddCountToStatistic(Main.PluginName, "People made to follow you");
+                    API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "People made to follow you");
                 }
-                while (pedfollowing.Exists())
+                while (FollowingPed.Exists())
                 {
                     GameFiber.Yield();
-                    if (!pedfollowing.Exists()) { break; }
-                    if (EnableFollow)
+                    if (!FollowingPed.Exists()) { break; }
+                    if (IsFollowingEnabled)
                     {
-                        if (Vector3.Distance(Game.LocalPlayer.Character.Position, pedfollowing.Position) > 2.3f)
+                        if (Vector3.Distance(Game.LocalPlayer.Character.Position, FollowingPed.Position) > 2.3f)
                         {
-                            FollowTask = pedfollowing.Tasks.FollowNavigationMeshToPosition(Game.LocalPlayer.Character.GetOffsetPosition(Vector3.RelativeBack * 1.5f), pedfollowing.Heading, 1.6f);
-                            FollowTask.WaitForCompletion(600);
+                            var follow = FollowingPed.Tasks.FollowNavigationMeshToPosition(Game.LocalPlayer.Character.GetOffsetPosition(Vector3.RelativeBack * 1.5f), FollowingPed.Heading, 1.6f);
+                            follow.WaitForCompletion(600);
                         }
                         
                     }
@@ -235,27 +228,22 @@ namespace Arrest_Manager
                         break;
                     }
                 }
-                if (pedfollowing.Exists())
+                if (FollowingPed.Exists())
                 {
                     
-                    pedfollowing.Tasks.StandStill(7000);
+                    FollowingPed.Tasks.StandStill(7000);
                 }
-                EnableFollow = false;
-                FollowItem.Text = "Follow";
+                IsFollowingEnabled = false;
+                itemFollow.Title = "Ask to Follow";
                 if (PedBlip.Exists()) { PedBlip.Delete(); }
-                CallTaxiItem.Enabled = true;
-                GrabItem.Enabled = true;
-                if (TransportToHospitalItem != null)
-                {
-                    TransportToHospitalItem.Enabled = true;
-                }
+                itemCallTaxi.Enabled = true;
+                itemGrab.Enabled = true;
             });
-            
         }
-        
+
         public static void ArrestPed(Ped suspect = null)
         {
-            GameFiber.StartNew(delegate
+            GameFiber.StartNew(() =>
             {
                 if (!suspect)
                 {
@@ -263,24 +251,28 @@ namespace Arrest_Manager
                     if (!suspect) { return; }
                 }
                 if (Functions.IsPedArrested(suspect)) { Game.DisplaySubtitle("Ped is already arrested", 3000); return; }
-                if (EntryPoint.suspectsPendingTransport.Contains(suspect)) { Game.DisplaySubtitle("Transport already pending for ped", 3000); return; }
                 if (suspect.IsInAnyVehicle(false)) { Game.DisplaySubtitle("Remove ped from vehicle", 3000); return; }
-                if (pedsbeingpickedup.Contains(suspect)) { Game.DisplaySubtitle("Taxi already enroute", 3000); return; }
-                List<Ped> pursuitPeds = new List<Ped>();
-                if (Functions.GetActivePursuit() != null && (pursuitPeds = Functions.GetPursuitPeds(Functions.GetActivePursuit()).ToList()).Contains(suspect))
+
+                var pursuitPeds = Functions.GetPursuitPeds(Functions.GetActivePursuit()).ToList();
+                if (Functions.GetActivePursuit() != null && (pursuitPeds.Contains(suspect)))
                 {
-                    if (pursuitPeds.Count == 1) { Functions.ForceEndPursuit(Functions.GetActivePursuit()); }
+                    if (pursuitPeds.Count == 1) 
+                    { 
+                        Functions.ForceEndPursuit(Functions.GetActivePursuit()); 
+                    }
                     else
                     {
                         suspect.Kill();
-                        suspect.MakeMissionPed();
+                        suspect.MakePersistent();
                         GameFiber.Yield();
                         suspect.Resurrect();
                         suspect.Tasks.ClearImmediately();
                     }
                 }
+
                 Functions.SetPedAsArrested(suspect, true);
-                suspect.MakeMissionPed();
+                suspect.MakePersistent();
+                suspect.BlockPermanentEvents = true;
                 suspect.Tasks.ClearImmediately();
                 suspect.Tasks.StandStill(-1);
                 suspect.Tasks.PlayAnimation("mp_arresting", "idle", 8f, AnimationFlags.UpperBodyOnly | AnimationFlags.SecondaryTask | AnimationFlags.Loop);
@@ -290,279 +282,103 @@ namespace Arrest_Manager
             });
         }
 
-        private Blip taxiblip;
-        private Vehicle taxi;
-        private Ped taxidriver;
-        private Ped pedtobepickedup;
-        private static List<Ped> pedsbeingpickedup = new List<Ped>();
-        public void CallTaxi()
-        {
-            GameFiber.StartNew(delegate
-            {
-                try {
-                    
-                    pedtobepickedup = GetNearestValidPed();
-                    if (!pedtobepickedup) { return; }
-                    
-                    if (Functions.IsPedArrested(pedtobepickedup)) { return; }
-                    if (EntryPoint.suspectsPendingTransport.Contains(pedtobepickedup)) { return; }
-                    if (pedtobepickedup.IsInAnyVehicle(false)) { Game.DisplaySubtitle("Remove ped from vehicle", 3000); return; }
-                    if (pedsbeingpickedup.Contains(pedtobepickedup)) { Game.DisplaySubtitle("Taxi already enroute", 3000); return; }
-                    ToggleMobilePhone(Game.LocalPlayer.Character, true);
-                    pedsbeingpickedup.Add(pedtobepickedup);
-                    pedtobepickedup.IsPersistent = true;
-                    pedtobepickedup.BlockPermanentEvents = true;
-                    pedtobepickedup.Tasks.StandStill(-1);
-                    Functions.SetPedCantBeArrestedByPlayer(pedtobepickedup, true);
-                    if (EntryPoint.IsLSPDFRPlusRunning)
-                    {
-                        API.LSPDFRPlusFuncs.AddCountToStatistic(Main.PluginName, "Taxis called");
-                    }
-                    float Heading;
-                    bool UseSpecialID = true;
-                    Vector3 SpawnPoint;
-                    float travelDistance;
-                    int waitCount = 0;
-                    while (true)
-                    {
-                        GetSpawnPoint(pedtobepickedup.Position, out SpawnPoint, out Heading, UseSpecialID);
-                        travelDistance = Rage.Native.NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>( SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, pedtobepickedup.Position.X, pedtobepickedup.Position.Y, pedtobepickedup.Position.Z);
-                        waitCount++;
-                        if (Vector3.Distance(pedtobepickedup.Position, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f)
-                        {
-
-                            if (travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
-                            {
-
-                                Vector3 directionFromVehicleToPed1 = (pedtobepickedup.Position - SpawnPoint);
-                                directionFromVehicleToPed1.Normalize();
-
-                                float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
-
-                                if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
-                                {
-
-
-                                    break;
-                                }
-                                else
-                                {
-
-                                }
-                            }
-                            else
-                            {
-
-                            }
-                        }
-                        else
-                        {
-
-                        }
-                        if (waitCount >= 400)
-                        {
-                            UseSpecialID = false;
-                        }
-                        if (waitCount == 600)
-                        {
-                            Game.DisplayNotification("Take the suspect ~s~to a more reachable location.");
-                            Game.DisplayNotification("Alternatively, press ~b~Y ~s~to force a spawn in the ~g~wilderness.");
-                        }
-                        if ((waitCount >= 600) && Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(Keys.Y))
-                        {
-                            SpawnPoint = Game.LocalPlayer.Character.Position.Around(15f);
-                            break;
-                        }
-                        GameFiber.Yield();
-
-                    }
-
-
-
-                    GameFiber.Wait(3000);
-                    ToggleMobilePhone(Game.LocalPlayer.Character, false);
-                    taxi = new Vehicle("TAXI", SpawnPoint, Heading);
-                    taxi.IsPersistent = true;
-                    taxi.IsTaxiLightOn = false;
-                    taxiblip = taxi.AttachBlip();
-                    taxiblip.Color = System.Drawing.Color.Blue;
-                    taxiblip.Flash(500, -1);
-                    taxidriver = taxi.CreateRandomDriver();
-                    taxidriver.IsPersistent = true;
-                    taxidriver.BlockPermanentEvents = true;
-                    taxidriver.Money = 1233;
-                    
-                    Game.DisplayNotification("A ~y~taxi ~s~is enroute to pick up the ped.");
-                    driveToEntity(taxidriver, taxi, pedtobepickedup, true);
-                    Rage.Native.NativeFunction.Natives.START_VEHICLE_HORN(taxi, 5000, 0, true);
-                    if (taxi.Speed > 15f)
-                    {
-                        NativeFunction.Natives.SET_VEHICLE_FORWARD_SPEED(taxi, 15f);
-                    }
-                    taxidriver.Tasks.PerformDrivingManeuver(VehicleManeuver.GoForwardStraightBraking);
-                    GameFiber.Sleep(600);
-                    taxidriver.Tasks.PerformDrivingManeuver(VehicleManeuver.Wait);
-                    if (taxiblip.Exists()) { taxiblip.Delete(); }
-                    if (pedfollowing == pedtobepickedup) { EnableFollow = false; }
-                    Rage.Native.NativeFunction.Natives.SET_PED_CAN_RAGDOLL(pedtobepickedup, false);
-                    pedtobepickedup.Tasks.Clear();
-                    pedtobepickedup.Tasks.FollowNavigationMeshToPosition(taxi.GetOffsetPosition(Vector3.RelativeLeft * 2f), taxi.Heading, 1.65f).WaitForCompletion(12000);
-                    pedtobepickedup.Tasks.EnterVehicle(taxi, 8000, 1).WaitForCompletion();
-                    
-                    taxidriver.Dismiss();
-                    taxi.Dismiss();
-                    
-                    while (true)
-                    {
-                        GameFiber.Yield();
-                        try
-                        {
-                            if (pedtobepickedup.Exists())
-                            {
-                                if (!taxi.Exists())
-                                {
-                                    pedtobepickedup.Delete();
-                                }
-                                if (!pedtobepickedup.IsDead)
-                                {
-                                    if (Vector3.Distance(Game.LocalPlayer.Character.Position, pedtobepickedup.Position) > 80f)
-                                    {
-                                        pedtobepickedup.Delete();
-                                        break;
-                                    }
-                                    if (!pedtobepickedup.IsInVehicle(taxi, false))
-                                    {
-                                        pedtobepickedup.Delete();
-                                        break;
-                                    }
-                                }
-                                else
-                                {
-                                    pedtobepickedup.Delete();
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
-
-                        }
-                        catch (Exception e)
-                        {
-                            Game.LogTrivial(e.ToString());
-                            if (pedtobepickedup.Exists())
-                            {
-                                pedtobepickedup.Delete();
-                            }
-                            break;
-                        }
-                    }
-                    //Game.DisplayNotification("Cleaned up");
-                }
-                catch(Exception e)
-                {
-                    Game.LogTrivial(e.ToString());
-                    Game.DisplayNotification("The taxi pickup service was interrupted");
-                    if (taxi.Exists()) { taxi.Delete(); }
-                    if (taxidriver.Exists()) { taxidriver.Delete(); }
-                    if (pedtobepickedup.Exists()) { pedtobepickedup.Delete(); }
-                }
-
-
-
-            });
-        }
-
-
-
-        public static UIMenu PedManagementMenu;
-        public static UIMenuItem FollowItem;
-        public static UIMenuItem GrabItem;
-        public static UIMenuItem CallTaxiItem;
-        public static UIMenuItem TransportToHospitalItem;
-        public static UIMenuItem ArrestItem;
-        public static UIMenuItem CallCoronerItem;
+        private static NativeItem itemCheckId;
+        private static NativeItem itemFollow;
+        private static NativeItem itemGrab;
+        private static NativeItem itemCallTaxi;
+        private static NativeItem itemRequestCoroner;
 
         public static void CreatePedManagementMenu()
         {
-            PedManagementMenu = new UIMenu("Ped Manager", "");
-            PedManagementMenu.AddItem(SceneManager.MenuSwitchListItem);
-            PedManagementMenu.AddItem(FollowItem = new UIMenuItem("Follow"));
-            PedManagementMenu.AddItem(GrabItem = new UIMenuItem("Grab"));
-            PedManagementMenu.AddItem(CallTaxiItem = new UIMenuItem("Call taxi"));
-            PedManagementMenu.AddItem(ArrestItem = new UIMenuItem("Arrest", "Instantly arrests the ped. Move the ped around and place them in your vehicle using the grab/follow features."));
-            PedManagementMenu.AddItem(CallCoronerItem = new UIMenuItem("Coroner", "Calls a coroner to deal with all nearby dead people."));
-            if (EntryPoint.IsLSPDFRPluginRunning("BetterEMS", new Version("1.0.0.0")))
-            {
-                PedManagementMenu.AddItem(TransportToHospitalItem = new UIMenuItem("Transport to hospital"));
-            }
-            PedManagementMenu.RefreshIndex();
-            PedManagementMenu.MouseControlsEnabled = false;
-            PedManagementMenu.AllowCameraMovement = true;
-            PedManagementMenu.OnItemSelect += OnItemSelect;
-            
+            itemCheckId = new NativeItem("Request Status Check", "Requests status check of the nearest ped from dispatch.");
+            itemFollow = new NativeItem("Ask to Follow", "Asks the nearest ped to follow the player.");
+            itemGrab = new NativeItem("Grab Nearest Ped", "Grabs the nearest ped.");
+            itemCallTaxi = new NativeItem("Request Taxi Escort", "Requests a taxi to pick up the target.");
+            itemRequestCoroner = new NativeItem("Request Coroner Unit", "Calls a coroner to deal with all nearby dead people.");
 
+            ManagementMenu.Add(itemCheckId);
+            ManagementMenu.Add(itemCallTaxi);
+            ManagementMenu.Add(itemRequestCoroner);
+            ManagementMenu.Add(itemGrab);
+            ManagementMenu.Add(itemFollow);
+
+            itemCheckId.Activated += ItemCheckId_Activated;
+            itemCallTaxi.Activated += ItemCallTaxi_Activated;
+            itemRequestCoroner.Activated += ItemRequestCoroner_Activated;
+            itemGrab.Activated += ItemGrab_Activated;
+            itemFollow.Activated += ItemFollow_Activated;
         }
 
-        public static void OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
+        private static void ItemFollow_Activated(object sender, EventArgs e)
         {
-            if (sender != PedManagementMenu) { return; }
-            Rage.Native.NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
-            if (selectedItem == FollowItem)
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            if (!IsFollowingEnabled)
             {
-                
-                if (!EnableFollow)
+                MakePedFollowPlayer();
+            }
+            else
+            {
+                IsFollowingEnabled = false;
+            }
+        }
+
+        private static void ItemGrab_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            if (!IsGrabEnabled)
+            {
+                if (!grabShortcutMessageShown)
                 {
-                    MakePedFollowPlayer();
-                    
+                    Game.DisplayNotification("You can also grab suspects by pressing ~b~" + EntryPoint.KeyConvert.ConvertToString(GrabPedKey) + " " + EntryPoint.KeyConvert.ConvertToString(GrabPedModifierKey));
                 }
-                else
-                {
-                    EnableFollow = false;
-                    
-                }
+                GrabPed();
             }
-            else if (selectedItem == GrabItem)
+            else
             {
-                
-                if (!EnableGrab)
-                {
-                    if (!GrabShortcutMessageShown)
-                    {
-                        Game.DisplaySubtitle("You can also grab peds by pressing ~b~" + EntryPoint.kc.ConvertToString(GrabPedKey) + " " + EntryPoint.kc.ConvertToString(GrabPedModifierKey), 4000);
-                    }
-                    GrabPed();
-                }
-                else
-                {
-                    EnableGrab = false;
-                }
+                IsGrabEnabled = false;
             }
-            else if (selectedItem == CallTaxiItem)
+        }
+
+        private static void ItemRequestCoroner_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            SceneManager.CallCoronerTime = true;
+            ManagementMenu.Visible = false;
+        }
+
+        private static void ItemCallTaxi_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            new Taxi().CallTaxi();
+            ManagementMenu.Visible = false;
+        }
+
+        private static void ItemCheckId_Activated(object sender, EventArgs e)
+        {
+            NativeFunction.Natives.SET_PED_STEALTH_MOVEMENT(Game.LocalPlayer.Character, 0, 0);
+
+            var ped = GetNearestValidPed(allowStopped: true, subtitleDisplayTime: 3000);
+            if (!ped)
             {
-                
-                new PedManager().CallTaxi();
-                PedManagementMenu.Visible = false;
-                //taxi
+                return;
             }
-            else if (selectedItem == CallCoronerItem)
+
+            GameFiber.StartNew(() =>
             {
-                SceneManager.callCoronerTime = true;
-                sender.Visible = false;
-            }
-            else if (selectedItem == TransportToHospitalItem)
-            {
-                if (EntryPoint.IsLSPDFRPluginRunning("BetterEMS", new Version("0.5.0.0")))
-                {
-                    RequestTransportToHospitalForNearestPed();
-                    sender.Visible = false;
-                }
-            }
-            else if (selectedItem == ArrestItem)
-            {
-                ArrestPed();
-            }
+                var persona = Functions.GetPersonaForPed(ped);
+                Functions.PlayPlayerRadioAction(Functions.GetPlayerRadioAction(), 3000);
+                RadioUtil.DisplayRadioQuote(Functions.GetPersonaForPed(Game.LocalPlayer.Character).FullName, $"Requesting status check for ~y~{persona.FullName}~w~, born on ~b~{persona.Birthday}");
+                SceneManager.BleepPlayer.Play();
+                GameFiber.Sleep(3500);
+                RadioUtil.DisplayRadioQuote("Dispatch", "10-4, stand by...");
+                GameFiber.Sleep(1000);
+
+                Functions.DisplayPedId(ped, false);
+            });
         }
     }
 }

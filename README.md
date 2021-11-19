@@ -1,32 +1,51 @@
-# Arrest Manager
-Arrest Manager is a plugin for LSPDFR by Albo1125 with nearly one million downloads on lspdfr.com. Originally released in 2015 under the name of 'More Jail Points', this is the first plugin for LSPDFR I ever wrote. In fact, it was my first ever proper C# project.
+# Arrest Manager+
 
-[Download page here (contains plenty of info on features)](https://www.lcpdfr.com/files/file/8107-arrest-manager-grab-peds-more-jail-points-prisoner-transport-more/)
+This is WithLithum's fork of the original Arrest Manager project after the project itself was on hiatus for nearly two years.
 
-[Check out my YouTube channel](https://www.youtube.com/channel/UCSDMQS6b2roa-dZ0vAyaVWg)
+**To be clear, this name is temponary. The code is no longer related to arrest - More Jail Points and Prisoner Transporter features has been removed. I plans to rename the project.**
 
-[Why I'm open sourcing some of my LSPDFR plugins](https://www.lcpdfr.com/forums/topic/87615-open-sourcing-albo1125s-mods-retirement/)
+Currently, I'm working on how to remove references from Albo1125.Common library from this project.
 
-[All donations are welcome and appreciated](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=T9T5RTSWX8PEY)
+## About Code
 
-## Code & building
-Quite simple, clone the repo, place the below dependencies into a new **Arrest Manager/dependencies** folder. It should then build without issue.
+You should be able to actually read the code easier as I cleaned a lot of codes as well as warnings. I'm actually shocked by how bad Albo1125 codes back then - thousand of warnings, and it's even worse that I uses SolarLint and Roslynator. However, I managed to get rid of most of them.
 
-I know, I know, the code is FAR from perfect. 
-This project sprung into life when I started learning C# and it originally started off as just a bit of toying around in my first ever object-oriented programming language.
-Who remembers the More Jail Points and then the More Jail Points & Prisoner Transporter days? Yes, much of that (abysmal but functional) code remains today.
+> I know, I know, the code is FAR from perfect. This project sprung into life when I started learning C# and it originally started off as just a bit of toying around in my first ever object-oriented programming language. Who remembers the More Jail Points and then the More Jail Points & Prisoner Transporter days? Yes, much of that (abysmal but functional) code remains today.
+> 
+>                                                                                                 -- Albo1125
 
-The code requires an enormous amount of refactoring and optimization work which I do not currently have the time for.
-If you feel like it, please feel free to contribute by submitting a Pull Request. 
-They may make it into a release and, of course, you'll be credited appropriately.
-Obviously, feel free to use this as a resource to learn from and improve your programming skills for RPH (credits appreciated, please see licence also if copying/using larger parts of the code).
+Please, respect the license - even copying a smaller part directly from this project **is propagating (in GPLv3)**. This means that copyleft **applies to any part of code, whether it's small or big**.
 
-## Developer dependencies
-* [Albo1125.Common by Albo1125](http://www.lcpdfr.com/files/file/10294-albo1125common/)
-* [Better EMS by PNWParksFan](https://www.lcpdfr.com/files/file/11647-better-ems/)
-* [ComputerPlus by PieRGud](https://github.com/PieRGud/ComputerPlus)
-* [LSPD First Response by G17 Media](https://www.lcpdfr.com/files/file/7792-lspd-first-response/)
-* [PoliceSmartRadio by Albo1125](https://www.lcpdfr.com/files/file/15354-police-smartradio-the-successor-to-police-radio/)
-* [RAGENativeUI by Alexguirre](https://github.com/alexguirre/RAGENativeUI)
-* [RAGEPluginHook SDK by MulleDK19](http://ragepluginhook.net/Downloads.aspx)
-* [VocalDispatch by turbofandude](https://www.lcpdfr.com/files/file/10593-vocaldispatch/)
+## Contributions
+
+You will need to fork this repository, commit your changes and make merge request.
+
+## Building
+
+To build the project you'll need these goes into your `Arrest Manager/dependencies` folder:
+
+- [Albo1125.Common by Albo1125](http://www.lcpdfr.com/files/file/10294-albo1125common/)
+- [Better EMS by PNWParksFan](https://www.lcpdfr.com/files/file/11647-better-ems/)
+- [ComputerPlus by PieRGud](https://github.com/PieRGud/ComputerPlus)
+- [LSPD First Response by G17 Media](https://www.lcpdfr.com/files/file/7792-lspd-first-response/)
+- [PoliceSmartRadio by Albo1125](https://www.lcpdfr.com/files/file/15354-police-smartradio-the-successor-to-police-radio/)
+- [RAGENativeUI by Alexguirre](https://github.com/alexguirre/RAGENativeUI)
+- [RAGEPluginHook SDK by MulleDK19](http://ragepluginhook.net/Downloads.aspx)
+
+And you will need to manually reference these:
+
+* [RelaperCommons by RelaperCrystal](https://github.com/RelaperCrystal/RelaperCommons)
+
+## Thanks
+
+* Thanks Albo1125 who did not just leave he's plug-ins alone on he's retirement.
+
+* Thanks the author of Better EMS, RAGENativeUI, Computer+ which brings new life of LSPDFR.
+
+* Thanks G17 Media for their great works on LSPDFR.
+
+* Thanks MulleDK19 (and LMS) for making RAGE Plugin Hook, and thanks HazardX for the original concept of writting .NET scripts on the original GTA IV. 
+
+* Thanks Rockstar Games for the awesome GTA V.
+
+* And, finally, thanks you, for reading this.

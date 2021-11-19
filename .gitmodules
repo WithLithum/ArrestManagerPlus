@@ -1,0 +1,3 @@
+[submodule "Repositories/RelaperCommons"]
+	path = Repositories/RelaperCommons
+	url = git@github.com:RelaperCrystal/RelaperCommons
