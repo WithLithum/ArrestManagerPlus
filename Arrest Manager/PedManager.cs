@@ -70,6 +70,8 @@ namespace Arrest_Manager
             return nearestPed;
         }
 
+        // TODO: Remove
+        [Obsolete("Request transport to hospital is deprecated. Call via BetterEMS directly.")]
         public static void RequestTransportToHospitalForNearestPed()
         {
             Game.DisplayHelp("This function is deprecated.");
@@ -290,7 +292,7 @@ namespace Arrest_Manager
 
         public static void CreatePedManagementMenu()
         {
-            itemCheckId = new NativeItem("Request Status Check", "Requests status check of the nearest ped from dispatch.");
+            itemCheckId = new NativeItem("Request Ped Status Check", "Requests status check of the nearest ped from dispatch.");
             itemFollow = new NativeItem("Ask to Follow", "Asks the nearest ped to follow the player.");
             itemGrab = new NativeItem("Grab Nearest Ped", "Grabs the nearest ped.");
             itemCallTaxi = new NativeItem("Request Taxi Escort", "Requests a taxi to pick up the target.");

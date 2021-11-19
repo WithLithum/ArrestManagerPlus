@@ -648,7 +648,7 @@ namespace Arrest_Manager
 
         internal static void CreateVehicleManagementMenu()
         {
-            vehicleCheckItem = new NativeItem("Request Status Check", "Requests the dispatch to check the status of the nearest vehicle.");
+            vehicleCheckItem = new NativeItem("Request Plate Check", "Requests the dispatch to check the status of the nearest vehicle.");
             ManagementMenu.Add(vehicleCheckItem);
             vehicleCheckItem.Activated += VehicleCheckItem_Activated;
 
