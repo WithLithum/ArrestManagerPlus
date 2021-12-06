@@ -327,7 +327,7 @@ namespace Arrest_Manager
             {
                 Game.LogTrivial("AM+: Loaded ArrestManager+, phase 2");
                 GameFiber.Wait(6000);
-                Game.DisplayNotification("web_lossantospolicedept", "web_lossantospolicedept", "ArrestManager+", "Loaded", "");
+                Game.DisplayNotification("commonmenu", "shop_mask_icon_a", "ArrestManager+", "~b~by Albo1125 ~s~/ ~g~fk. WLithum", "~b~Loaded.");
             });
             Game.LogTrivial("AM+: ArrestManager+ done loading");
             Choice();
