@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ArrestManager+")]
 [assembly: AssemblyDescription("Refined arrest manager (I should change it's name)")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("RelaperCrystal")]
+[assembly: AssemblyCompany("WithLithum")]
 [assembly: AssemblyProduct("Arrest Manager")]
-[assembly: AssemblyCopyright("Copyright © 2016-2019 Albo1125; Copyright © 2021 RelaperCrystal")]
+[assembly: AssemblyCopyright("Copyright © 2016-2019 Albo1125; Copyright © 2021 WithLithum")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("8.0.0517.0954")]
-[assembly: AssemblyFileVersion("8.0.0517.0954")]
+[assembly: AssemblyVersion("8.0.100.1")]
+[assembly: AssemblyFileVersion("8.0.100.1")]
