@@ -13,45 +13,6 @@ namespace Arrest_Manager.API
     public static class Functions
     {
         /// <summary>
-        /// Request transport for the specified suspect. Returns a bool indicating whether requesting transport was successful.
-        /// </summary>
-        /// <param name="suspect">The ped to be transported. Does not necessarily have to be arrested.</param>
-        /// <returns>Returns a bool indicating whether requesting transport was successful.</returns>
-        [Obsolete("TRANSPORT DEPRECATED")]
-        public static bool RequestTransport(Ped suspect)
-        {
-            RequestTransport();
-            return false;
-        }
-
-        /// <summary>
-        /// Request transport for the nearest suspect that has transport on standby. If multiple suspects are available, requests multi transport automatically. Returns a bool indicating whether requesting transport was successful.
-        /// </summary>
-        /// <returns>Returns a bool indicating whether requesting transport was successful.</returns>
-        [Obsolete("TRANSPORT FEATURE DROPPED")]
-        public static bool RequestTransport()
-        {
-            Game.LogTrivial("AM+: WARNING - Transport has been DEPRECATED");
-            Game.DisplayNotification("~r~~h~ARREST MANAGER+ WARNING~n~~w~Police transport feature is deprecated - please contact your call-out/event/feature author to remove call to the transport, use LSPDFR instead");
-            
-            return false;
-        }
-
-        /// <summary>
-        /// Requests transport for the nearest ped that has transport on standby. Returns a bool indicating whether requesting transport was successful.
-        /// </summary>
-        /// <param name="Cop">Cop to drive the pickup vehicle.</param>
-        /// <param name="PoliceTransportVehicle">Pickup vehicle to be driven by the cop.</param>
-        /// <returns>Returns a bool indicating whether requesting transport was successful.</returns>
-        [Obsolete("TRANSPORT DEPRECATED")]
-        public static bool RequestTransport(Ped Cop, Vehicle PoliceTransportVehicle)
-        {
-            RequestTransport();
-            return false;
-        }
-
-
-        /// <summary>
         /// Dispatches a tow truck for the target vehicle.
         /// </summary>
         /// <param name="VehicleToTow">Must not have occupants and be a valid model that can be towed (no planes etc.).</param>
@@ -133,23 +94,6 @@ namespace Arrest_Manager.API
         public static void ReleaseGrabbedPed()
         {
             PedManager.IsGrabEnabled = false;
-        }
-
-        /// <summary>
-        /// Arrests the ped as would happen using the Ped Management menu. Must use Grab feature to move the ped around and place in vehicle.
-        /// </summary>
-        /// <param name="suspect">The ped to be arrested.</param>
-        [Obsolete("You cannot arrest ped with API anymore.")]
-        public static void ArrestPed(Ped suspect)
-        {
-            if (suspect)
-            {
-                Game.LogTrivial("!!!!! ARREST MANAGER+ WARNING !!!!!");
-                Game.LogTrivial("Someone is calling deprecated API function ArrestPed");
-                Game.LogTrivial("This is not supported, and will be removed in the future!");
-                Game.DisplayNotification("~r~~h~ARREST MANAGER+ WARNING~w~~n~Deprecated API function ArrestPed is being called. Please notify the user plug-in author of the currently executing call-out, event or feature.");
-                PedManager.ArrestPed(suspect);
-            }
         }
 
         /// <summary>
