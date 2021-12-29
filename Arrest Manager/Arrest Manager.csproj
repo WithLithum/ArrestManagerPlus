@@ -99,7 +99,6 @@
     <Compile Include="API\BetterEmsFunctions.cs" />
     <Compile Include="API\ComputerPlusFuncs.cs" />
     <Compile Include="API\Functions.cs" />
-    <Compile Include="API\LspdfrPlusFunctions.cs" />
     <Compile Include="Coroner.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Jailer.cs" />
