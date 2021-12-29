@@ -47,10 +47,10 @@ namespace Arrest_Manager
 
         public static void TaskDriveToEntity(Ped driver, Vehicle vehicle, Entity target, bool getClose)
         {
-            int drivingLoopCount = 0;
-            bool transportVanTeleported = false;
-            int waitCount = 0;
-            bool forceCloseSpawn = false;
+            var drivingLoopCount = 0;
+            var transportVanTeleported = false;
+            var waitCount = 0;
+            var forceCloseSpawn = false;
 
             // Get close to player with various checks
             try
@@ -95,9 +95,11 @@ namespace Arrest_Manager
                         driver.Tasks.DriveToPosition(target.Position, 15f, VehicleDrivingFlags.FollowTraffic | VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians);
                     }
 
+                    // Manipulate some driving stuff
                     NativeFunction.Natives.SET_DRIVE_TASK_DRIVING_STYLE(driver, 786607);
                     NativeFunction.Natives.SET_DRIVER_AGGRESSIVENESS(driver, 0f);
                     NativeFunction.Natives.SET_DRIVER_ABILITY(driver, 1f);
+
                     GameFiber.Wait(600);
                     waitCount++;
                     if (waitCount == 55)
@@ -105,7 +107,7 @@ namespace Arrest_Manager
                         Game.DisplayHelp("Service taking too long? Hold down ~b~" + EntryPoint.KeyConvert.ConvertToString(EntryPoint.SceneManagementKey) + " ~s~to speed it up.", 5000);
                     }
 
-                    //If van isn't moving
+                    // If van isn't moving
                     if (vehicle.Speed < 2f)
                     {
                         drivingLoopCount++;
@@ -120,41 +122,42 @@ namespace Arrest_Manager
                     //If Van is stuck, relocate it
                     if (drivingLoopCount >= 33 && drivingLoopCount <= 38 && EntryPoint.AllowWarping)
                     {
-                        Vector3 SpawnPoint;
-                        float Heading;
-                        bool UseSpecialID = true;
+                        Vector3 sp;
+                        float head;
+                        bool specId = true;
                         float travelDistance;
                         int wC = 0;
                         while (true)
                         {
-                            GetSpawnPoint(target.Position, out SpawnPoint, out Heading, UseSpecialID);
-                            travelDistance = Rage.Native.NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, target.Position.X, target.Position.Y, target.Position.Z);
+                            GetSpawnPoint(target.Position, out sp, out head, specId);
+                            travelDistance = Rage.Native.NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(sp.X, sp.Y, sp.Z, target.Position.X, target.Position.Y, target.Position.Z);
                             wC++;
-                            if (Vector3.Distance(target.Position, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f && travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
+                            if (Vector3.Distance(target.Position, sp) > EntryPoint.SceneManagementSpawnDistance - 15f && travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
                             {
-                                var spawnDirection = (target.Position - SpawnPoint);
+                                var spawnDirection = (target.Position - sp);
                                 spawnDirection.Normalize();
 
                                 var headingToPlayer = MathHelper.ConvertDirectionToHeading(spawnDirection);
 
-                                if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(headingToPlayer)) < 150f)
+                                if (Math.Abs(MathHelper.NormalizeHeading(head) - MathHelper.NormalizeHeading(headingToPlayer)) < 150f)
                                 {
                                     break;
                                 }
                             }
                             if (wC >= 400)
                             {
-                                UseSpecialID = false;
+                                specId = false;
                             }
                             GameFiber.Yield();
                         }
 
                         Game.Console.Print("Relocating because service was stuck...");
-                        vehicle.Position = SpawnPoint;
+                        vehicle.Position = sp;
 
-                        vehicle.Heading = Heading;
+                        vehicle.Heading = head;
                         drivingLoopCount = 39;
                     }
+
                     // if van is stuck for a 2nd time or takes too long, spawn it very near to the car
                     else if (((drivingLoopCount >= 70 || waitCount >= 110) && EntryPoint.AllowWarping) || forceCloseSpawn)
                     {
@@ -194,7 +197,7 @@ namespace Arrest_Manager
                 {
                     while (((Vector3.Distance(target.Position, vehicle.Position) > 19f && (vehicle.Position.Z - target.Position.Z < -2.5f)) || (vehicle.Position.Z - target.Position.Z > 2.5f)) && !transportVanTeleported)
                     {
-                        if (!target.Exists() || !target.IsValid())
+                        if (!target)
                         {
                             return;
                         }
@@ -218,7 +221,8 @@ namespace Arrest_Manager
                                     break;
                                 }
                             }
-                            Vector3 directionFromVehicleToPed = (target.Position - SpawnPoint);
+
+                            var directionFromVehicleToPed = (target.Position - SpawnPoint);
                             directionFromVehicleToPed.Normalize();
 
                             float vehicleHeading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed);
@@ -237,9 +241,11 @@ namespace Arrest_Manager
                         {
                             return;
                         }
-                        Rage.Task parkNearSuspect = driver.Tasks.DriveToPosition(target.Position, 6f, VehicleDrivingFlags.FollowTraffic | VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians);
+
+                        var parkNearSuspect = driver.Tasks.DriveToPosition(target.Position, 6f, VehicleDrivingFlags.FollowTraffic | VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians);
                         parkNearSuspect.WaitForCompletion(800);
                         transportVanTeleported = false;
+
                         if (Vector3.Distance(target.Position, vehicle.Position) > 50f)
                         {
                             vehicle.Position = World.GetNextPositionOnStreet(target.Position.Around(12f));
@@ -256,25 +262,26 @@ namespace Arrest_Manager
             }
 #pragma warning restore CA1031 // Do not catch general exception types
         }
-        public static void GetSpawnPoint(Vector3 StartPoint, out Vector3 SpawnPoint1, out float Heading1, bool UseSpecialID)
-        {
-            Vector3 tempspawn = World.GetNextPositionOnStreet(StartPoint.Around2D(EntryPoint.SceneManagementSpawnDistance + 5f));
-#pragma warning disable S1854 // Unused assignments should be removed
-            Vector3 SpawnPoint = Vector3.Zero;
-#pragma warning restore S1854 // Unused assignments should be removed
-            float Heading = 0;
 
-            if (!UseSpecialID || !NativeFunction.Natives.GET_NTH_CLOSEST_VEHICLE_NODE_FAVOUR_DIRECTION<bool>(tempspawn.X, tempspawn.Y, tempspawn.Z, StartPoint.X, StartPoint.Y, StartPoint.Z, 0, out SpawnPoint, out Heading, 0, 0x40400000, 0) || !SpawnPoint.IsNodeSafe())
+        public static void GetSpawnPoint(Vector3 start, out Vector3 spawn, out float heading, bool useSpecialId)
+        {
+            Vector3 tempspawn = World.GetNextPositionOnStreet(start.Around2D(EntryPoint.SceneManagementSpawnDistance + 5f));
+#pragma warning disable S1854 // Unused assignments should be removed
+            var sp = Vector3.Zero;
+#pragma warning restore S1854 // Unused assignments should be removed
+            var head = 0f;
+
+            if (!useSpecialId || !NativeFunction.Natives.GET_NTH_CLOSEST_VEHICLE_NODE_FAVOUR_DIRECTION<bool>(tempspawn.X, tempspawn.Y, tempspawn.Z, start.X, start.Y, start.Z, 0, out sp, out head, 0, 0x40400000, 0) || !sp.IsNodeSafe())
             {
                 Game.LogTrivial("AM+: Unsuccessful specialID");
-                SpawnPoint = World.GetNextPositionOnStreet(StartPoint.Around2D(EntryPoint.SceneManagementSpawnDistance + 5f));
-                var spawnDirection = StartPoint - SpawnPoint;
+                sp = World.GetNextPositionOnStreet(start.Around2D(EntryPoint.SceneManagementSpawnDistance + 5f));
+                var spawnDirection = start - sp;
                 spawnDirection.Normalize();
 
-                Heading = MathHelper.ConvertDirectionToHeading(spawnDirection);
+                head = MathHelper.ConvertDirectionToHeading(spawnDirection);
             }
-            SpawnPoint1 = SpawnPoint;
-            Heading1 = Heading;
+            spawn = sp;
+            heading = head;
         }
 
         private static ObjectPool _menuPool;

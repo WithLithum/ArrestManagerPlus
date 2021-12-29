@@ -5,3 +5,6 @@ dotnet_diagnostic.S1450.severity = none
 
 # IDE0065: 错放了 using 指令
 csharp_using_directive_placement = outside_namespace
+
+# IDE0008: 使用显式类型
+csharp_style_var_when_type_is_apparent = true
