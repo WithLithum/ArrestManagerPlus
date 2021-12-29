@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using Albo1125.Common.CommonLibrary;
 using LemonUI;
@@ -38,7 +37,11 @@ namespace Arrest_Manager
                 {
                     GameFiber.Wait(800);
                 }
-                if (MobilePhone.Exists()) { MobilePhone.Delete(); }
+
+                if (MobilePhone)
+                {
+                    MobilePhone.Delete();
+                }
             }
         }
 
@@ -52,29 +55,29 @@ namespace Arrest_Manager
             // Get close to player with various checks
             try
             {
-                GameFiber.StartNew(delegate
-                {
-                    while (!forceCloseSpawn)
-                    {
-                        GameFiber.Yield();
-                        if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(EntryPoint.SceneManagementKey))
-                        {
-                            GameFiber.Sleep(300);
-                            if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementKey))
-                            {
-                                GameFiber.Sleep(1000);
-                                if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementKey))
-                                {
-                                    forceCloseSpawn = true;
-                                }
-                                else
-                                {
-                                    Game.DisplayNotification("Hold down the ~b~Scene Management Key ~s~to force a close spawn.");
-                                }
-                            }
-                        }
-                    }
-                });
+                _ = GameFiber.StartNew(() =>
+                  {
+                      while (!forceCloseSpawn)
+                      {
+                          GameFiber.Yield();
+                          if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(EntryPoint.SceneManagementKey))
+                          {
+                              GameFiber.Sleep(300);
+                              if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementKey))
+                              {
+                                  GameFiber.Sleep(1000);
+                                  if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementKey))
+                                  {
+                                      forceCloseSpawn = true;
+                                  }
+                                  else
+                                  {
+                                      Game.DisplayNotification("Hold down the ~b~Scene Management Key ~s~to force a close spawn.");
+                                  }
+                              }
+                          }
+                      }
+                  });
 
                 Task driveToPed = null;
                 driver.Tasks.PerformDrivingManeuver(VehicleManeuver.GoForwardStraight).WaitForCompletion(500);
