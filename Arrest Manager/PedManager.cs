@@ -92,10 +92,6 @@ namespace Arrest_Manager
                 FollowingPed.Rotation = Game.LocalPlayer.Character.Rotation;
                 Game.LocalPlayer.Character.Tasks.PlayAnimation("doors@", "door_sweep_r_hand_medium", 9f, AnimationFlags.StayInEndFrame | AnimationFlags.SecondaryTask | AnimationFlags.UpperBodyOnly).WaitForCompletion(2000);
 
-                if (EntryPoint.IsLSPDFRPlusRunning)
-                {
-                    API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "People grabbed");
-                }
                 FollowingPed.Tasks.ClearImmediately();
 
                 NativeFunction.Natives.ATTACH_ENTITY_TO_ENTITY(FollowingPed, Game.LocalPlayer.Character, (int)PedBoneId.RightHand, 0.2f, 0.4f, 0f, 0f, 0f, 0f, true, true, false, false, 2, true);
@@ -203,10 +199,6 @@ namespace Arrest_Manager
                 itemCallTaxi.Enabled = false;
                 itemGrab.Enabled = false;
 
-                if (EntryPoint.IsLSPDFRPlusRunning)
-                {
-                    API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "People made to follow you");
-                }
                 while (FollowingPed.Exists())
                 {
                     GameFiber.Yield();

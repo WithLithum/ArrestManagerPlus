@@ -169,10 +169,7 @@ namespace Arrest_Manager
                       carblip = car.AttachBlip();
                       carblip.Color = System.Drawing.Color.Black;
                       carblip.Scale = 0.7f;
-                      if (EntryPoint.IsLSPDFRPlusRunning)
-                      {
-                          API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "Vehicles towed");
-                      }
+
                       _ = Game.LocalPlayer.Character;
                       if (car.Model.IsCar && RecruitNearbyTowtruck(out driver, out towTruck))
                       {
@@ -528,10 +525,7 @@ namespace Arrest_Manager
                       }
 
                       Ped playerPed = Game.LocalPlayer.Character;
-                      if (EntryPoint.IsLSPDFRPlusRunning)
-                      {
-                          API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "Insurance pickups");
-                      }
+
                       Vector3 SpawnPoint = World.GetNextPositionOnStreet(playerPed.Position.Around(EntryPoint.SceneManagementSpawnDistance));
                       float travelDistance;
                       int waitCount = 0;
