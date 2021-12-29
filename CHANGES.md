@@ -1,6 +1,6 @@
 # Changes
 
-As of GPL requirement, this document lists all noticeable changes.
+As of GPL requirement, this document lists all noticeable changes from original project. Statements valid as of 2021/12/29.
 
 ## Project
 
@@ -16,9 +16,19 @@ As of GPL requirement, this document lists all noticeable changes.
 
 * Removed redundant `else` in `PedManager`
 
+* Remove unused XML types
+
 ## Logic
 
 * Made `PedManager` use `Functions.IsPedACop` to determine cop instead of using `Relationship` to check
+
+## API
+
+* Remove verification
+
+* Removed transport related API
+
+* Removed arrest ped API
 
 ## Interface
 
