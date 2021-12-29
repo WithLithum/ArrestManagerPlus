@@ -107,6 +107,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SceneManager.cs" />
     <Compile Include="Services\Taxi.cs" />
+    <Compile Include="Util\VehicleSettings.cs" />
     <Compile Include="VehicleManager.cs" />
     <Compile Include="XMLStuff.cs" />
   </ItemGroup>
