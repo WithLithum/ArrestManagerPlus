@@ -66,13 +66,6 @@ namespace Arrest_Manager
             return nearestPed;
         }
 
-        // TODO: Remove
-        [Obsolete("Request transport to hospital is deprecated. Call via BetterEMS directly.")]
-        public static void RequestTransportToHospitalForNearestPed()
-        {
-            Game.DisplayHelp("This function is deprecated.");
-        }
-
         public static void GrabPed()
         {
             Blip pedBlip;
@@ -96,7 +89,7 @@ namespace Arrest_Manager
 
                 NativeFunction.Natives.ATTACH_ENTITY_TO_ENTITY(FollowingPed, Game.LocalPlayer.Character, (int)PedBoneId.RightHand, 0.2f, 0.4f, 0f, 0f, 0f, 0f, true, true, false, false, 2, true);
                 API.Functions.OnPlayerGrabbedPed(FollowingPed);
-                while (true)
+                do
                 {
                     GameFiber.Yield();
                     if (!FollowingPed.Exists()) break;
@@ -107,7 +100,6 @@ namespace Arrest_Manager
 
                         if (Game.LocalPlayer.Character.DistanceTo(nearestveh.Position) < 3.9f && nearestveh.PassengerCapacity >= 3)
                         {
-
                             int SeatToPutInto = 1;
                             if (Game.LocalPlayer.Character.DistanceTo(nearestveh.GetOffsetPosition(Vector3.RelativeLeft * 1.5f)) > Game.LocalPlayer.Character.DistanceTo(nearestveh.GetOffsetPosition(Vector3.RelativeRight * 1.5f)))
                             {
@@ -120,7 +112,7 @@ namespace Arrest_Manager
                                 {
                                     if (nearestveh.GetDoors().Length > SeatToPutInto + 1)
                                     {
-                                        NativeFunction.Natives.TASK_OPEN_VEHICLE_DOOR( Game.LocalPlayer.Character, nearestveh, 6000f, SeatToPutInto, 1.47f);
+                                        NativeFunction.Natives.TASK_OPEN_VEHICLE_DOOR(Game.LocalPlayer.Character, nearestveh, 6000f, SeatToPutInto, 1.47f);
                                         int waitCount = 0;
                                         while (true)
                                         {
@@ -160,13 +152,8 @@ namespace Arrest_Manager
                     {
                         Game.LocalPlayer.Character.Tasks.PlayAnimation("doors@", "door_sweep_r_hand_medium", 9f, AnimationFlags.StayInEndFrame | AnimationFlags.SecondaryTask | AnimationFlags.UpperBodyOnly);
                     }
-                    if (!IsGrabEnabled || Game.LocalPlayer.Character.IsInAnyVehicle(false) || FollowingPed.IsInAnyVehicle(true) || Game.LocalPlayer.Character.DistanceTo(FollowingPed) > 4f)
-                    {
-                        
-                        break;
-                    }
-
                 }
+                while (IsGrabEnabled && !Game.LocalPlayer.Character.IsInAnyVehicle(false) && !FollowingPed.IsInAnyVehicle(true) && Game.LocalPlayer.Character.DistanceTo(FollowingPed) <= 4f);
 
                 if (FollowingPed.Exists() && !FollowingPed.IsInAnyVehicle(false))
                 {
@@ -192,7 +179,7 @@ namespace Arrest_Manager
                 if (!FollowingPed) { return; }
                 PedBlip = FollowingPed.AttachBlip();
                 PedBlip.Color = System.Drawing.Color.Yellow;
-                
+
                 PedBlip.Flash(400, -1);
                 IsFollowingEnabled = true;
                 itemFollow.Title = "Ask to Stop Following";
@@ -210,17 +197,14 @@ namespace Arrest_Manager
                             var follow = FollowingPed.Tasks.FollowNavigationMeshToPosition(Game.LocalPlayer.Character.GetOffsetPosition(Vector3.RelativeBack * 1.5f), FollowingPed.Heading, 1.6f);
                             follow.WaitForCompletion(600);
                         }
-                        
                     }
                     else
                     {
-                        
                         break;
                     }
                 }
                 if (FollowingPed.Exists())
                 {
-                    
                     FollowingPed.Tasks.StandStill(7000);
                 }
                 IsFollowingEnabled = false;
@@ -246,9 +230,9 @@ namespace Arrest_Manager
                 var pursuitPeds = Functions.GetPursuitPeds(Functions.GetActivePursuit()).ToList();
                 if (Functions.GetActivePursuit() != null && (pursuitPeds.Contains(suspect)))
                 {
-                    if (pursuitPeds.Count == 1) 
-                    { 
-                        Functions.ForceEndPursuit(Functions.GetActivePursuit()); 
+                    if (pursuitPeds.Count == 1)
+                    {
+                        Functions.ForceEndPursuit(Functions.GetActivePursuit());
                     }
                     else
                     {
@@ -266,7 +250,7 @@ namespace Arrest_Manager
                 suspect.Tasks.ClearImmediately();
                 suspect.Tasks.StandStill(-1);
                 suspect.Tasks.PlayAnimation("mp_arresting", "idle", 8f, AnimationFlags.UpperBodyOnly | AnimationFlags.SecondaryTask | AnimationFlags.Loop);
-                
+
                 EntryPoint.suspectsArrestedByPlayer.Add(suspect);
                 API.Functions.OnPlayerArrestedPed(suspect);
             });
@@ -372,4 +356,3 @@ namespace Arrest_Manager
         }
     }
 }
-

@@ -254,21 +254,17 @@ namespace Arrest_Manager
                     GameFiber.Sleep(600);
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch
             {
                 // If we don't catch everything we got, we will crash the plug-in
                 // That is what analyzers would not understand
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         public static void GetSpawnPoint(Vector3 start, out Vector3 spawn, out float heading, bool useSpecialId)
         {
             Vector3 tempspawn = World.GetNextPositionOnStreet(start.Around2D(EntryPoint.SceneManagementSpawnDistance + 5f));
-#pragma warning disable S1854 // Unused assignments should be removed
             var sp = Vector3.Zero;
-#pragma warning restore S1854 // Unused assignments should be removed
             var head = 0f;
 
             if (!useSpecialId || !NativeFunction.Natives.GET_NTH_CLOSEST_VEHICLE_NODE_FAVOUR_DIRECTION<bool>(tempspawn.X, tempspawn.Y, tempspawn.Z, start.X, start.Y, start.Z, 0, out sp, out head, 0, 0x40400000, 0) || !sp.IsNodeSafe())

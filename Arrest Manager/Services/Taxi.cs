@@ -10,10 +10,10 @@ namespace Arrest_Manager.Services
 {
     internal class Taxi
     {
-        private Vehicle taxi;
-        private Ped taxidriver;
-        private Ped pedtobepickedup;
-        private static readonly List<Ped> pedsBeingPickedUp = new List<Ped>();
+        private Vehicle _taxi;
+        private Ped _taxiDriver;
+        private Ped _currentSubject;
+        private static readonly List<Ped> _subjects = new List<Ped>();
 
         public void CallTaxi()
         {
@@ -21,27 +21,27 @@ namespace Arrest_Manager.Services
             {
                 try
                 {
-                    pedtobepickedup = PedManager.GetNearestValidPed();
-                    if (!pedtobepickedup) return;
+                    _currentSubject = PedManager.GetNearestValidPed();
+                    if (!_currentSubject) return;
 
-                    if (Functions.IsPedArrested(pedtobepickedup)) 
+                    if (Functions.IsPedArrested(_currentSubject))
                     {
                         return;
                     }
 
-                    if (pedtobepickedup.IsInAnyVehicle(false)) 
+                    if (_currentSubject.IsInAnyVehicle(false))
                     {
                         Game.DisplayHelp("You cannot call taxi for a ped in a vehicle.");
                         return;
                     }
 
-                    if (pedsBeingPickedUp.Contains(pedtobepickedup)) { Game.DisplayHelp("Taxi is already assigned to this suspect."); return; }
+                    if (_subjects.Contains(_currentSubject)) { Game.DisplayHelp("Taxi is already assigned to this suspect."); return; }
                     ToggleMobilePhone(Game.LocalPlayer.Character, true);
-                    pedsBeingPickedUp.Add(pedtobepickedup);
-                    pedtobepickedup.IsPersistent = true;
-                    pedtobepickedup.BlockPermanentEvents = true;
-                    pedtobepickedup.Tasks.StandStill(-1);
-                    Functions.SetPedCantBeArrestedByPlayer(pedtobepickedup, true);
+                    _subjects.Add(_currentSubject);
+                    _currentSubject.IsPersistent = true;
+                    _currentSubject.BlockPermanentEvents = true;
+                    _currentSubject.Tasks.StandStill(-1);
+                    Functions.SetPedCantBeArrestedByPlayer(_currentSubject, true);
 
                     float Heading;
                     bool UseSpecialID = true;
@@ -50,17 +50,17 @@ namespace Arrest_Manager.Services
                     int waitCount = 0;
                     while (true)
                     {
-                        GetSpawnPoint(pedtobepickedup.Position, out SpawnPoint, out Heading, UseSpecialID);
-                        travelDistance = NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, pedtobepickedup.Position.X, pedtobepickedup.Position.Y, pedtobepickedup.Position.Z);
+                        GetSpawnPoint(_currentSubject.Position, out SpawnPoint, out Heading, UseSpecialID);
+                        travelDistance = NativeFunction.Natives.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS<float>(SpawnPoint.X, SpawnPoint.Y, SpawnPoint.Z, _currentSubject.Position.X, _currentSubject.Position.Y, _currentSubject.Position.Z);
                         waitCount++;
-                        if (Vector3.Distance(pedtobepickedup.Position, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f && travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
+                        if (Vector3.Distance(_currentSubject.Position, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f && travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
                         {
-                            var direction = pedtobepickedup.Position - SpawnPoint;
+                            var direction = _currentSubject.Position - SpawnPoint;
                             direction.Normalize();
 
-                            float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(direction);
+                            var heading = MathHelper.ConvertDirectionToHeading(direction);
 
-                            if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
+                            if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(heading)) < 150f)
                             {
                                 break;
                             }
@@ -81,74 +81,72 @@ namespace Arrest_Manager.Services
                             break;
                         }
                         GameFiber.Yield();
-
                     }
-
-
 
                     GameFiber.Wait(3000);
                     ToggleMobilePhone(Game.LocalPlayer.Character, false);
-                    taxi = new Vehicle("TAXI", SpawnPoint, Heading);
-                    taxi.IsPersistent = true;
-                    taxi.IsTaxiLightOn = false;
-                    var taxiblip = taxi.AttachBlip();
+                    _taxi = new Vehicle("TAXI", SpawnPoint, Heading)
+                    {
+                        IsPersistent = true,
+                        IsTaxiLightOn = false
+                    };
+                    var taxiblip = _taxi.AttachBlip();
                     taxiblip.Color = System.Drawing.Color.Blue;
                     taxiblip.Flash(500, -1);
-                    taxidriver = taxi.CreateRandomDriver();
-                    taxidriver.IsPersistent = true;
-                    taxidriver.BlockPermanentEvents = true;
-                    taxidriver.Money = 1233;
+                    _taxiDriver = _taxi.CreateRandomDriver();
+                    _taxiDriver.IsPersistent = true;
+                    _taxiDriver.BlockPermanentEvents = true;
+                    _taxiDriver.Money = 1233;
 
                     Game.DisplayNotification("~b~Taxi Control~w~: Dispatching taxi to your location.");
-                    TaskDriveToEntity(taxidriver, taxi, pedtobepickedup, true);
-                    NativeFunction.Natives.START_VEHICLE_HORN(taxi, 5000, 0, true);
-                    if (taxi.Speed > 15f)
+                    TaskDriveToEntity(_taxiDriver, _taxi, _currentSubject, true);
+                    NativeFunction.Natives.START_VEHICLE_HORN(_taxi, 5000, 0, true);
+                    if (_taxi.Speed > 15f)
                     {
-                        NativeFunction.Natives.SET_VEHICLE_FORWARD_SPEED(taxi, 15f);
+                        NativeFunction.Natives.SET_VEHICLE_FORWARD_SPEED(_taxi, 15f);
                     }
 
-                    taxidriver.Tasks.PerformDrivingManeuver(VehicleManeuver.GoForwardStraightBraking);
+                    _taxiDriver.Tasks.PerformDrivingManeuver(VehicleManeuver.GoForwardStraightBraking);
                     GameFiber.Sleep(600);
-                    taxidriver.Tasks.PerformDrivingManeuver(VehicleManeuver.Wait);
+                    _taxiDriver.Tasks.PerformDrivingManeuver(VehicleManeuver.Wait);
                     if (taxiblip.Exists()) { taxiblip.Delete(); }
-#pragma warning disable S2696 // Instance members should not write to "static" fields
-                    if (PedManager.FollowingPed == pedtobepickedup) PedManager.IsFollowingEnabled = false;
-#pragma warning restore S2696 // Instance members should not write to "static" fields
-                    NativeFunction.Natives.SET_PED_CAN_RAGDOLL(pedtobepickedup, false);
-                    pedtobepickedup.Tasks.Clear();
-                    pedtobepickedup.Tasks.FollowNavigationMeshToPosition(taxi.GetOffsetPosition(Vector3.RelativeLeft * 2f), taxi.Heading, 1.65f).WaitForCompletion(12000);
-                    pedtobepickedup.Tasks.EnterVehicle(taxi, 8000, 1).WaitForCompletion();
 
-                    taxidriver.Dismiss();
-                    taxi.Dismiss();
+                    if (PedManager.FollowingPed == _currentSubject) PedManager.IsFollowingEnabled = false;
+                    NativeFunction.Natives.SET_PED_CAN_RAGDOLL(_currentSubject, false);
+                    _currentSubject.Tasks.Clear();
+                    _currentSubject.Tasks.FollowNavigationMeshToPosition(_taxi.GetOffsetPosition(Vector3.RelativeLeft * 2f), _taxi.Heading, 1.65f).WaitForCompletion(12000);
+                    _currentSubject.Tasks.EnterVehicle(_taxi, 8000, 1).WaitForCompletion();
+
+                    _taxiDriver.Dismiss();
+                    _taxi.Dismiss();
 
                     while (true)
                     {
                         GameFiber.Yield();
                         try
                         {
-                            if (pedtobepickedup.Exists())
+                            if (_currentSubject.Exists())
                             {
-                                if (!taxi.Exists())
+                                if (!_taxi.Exists())
                                 {
-                                    pedtobepickedup.Delete();
+                                    _currentSubject.Delete();
                                 }
-                                if (!pedtobepickedup.IsDead)
+                                if (!_currentSubject.IsDead)
                                 {
-                                    if (Vector3.Distance(Game.LocalPlayer.Character.Position, pedtobepickedup.Position) > 80f)
+                                    if (Vector3.Distance(Game.LocalPlayer.Character.Position, _currentSubject.Position) > 80f)
                                     {
-                                        pedtobepickedup.Delete();
+                                        _currentSubject.Delete();
                                         break;
                                     }
-                                    if (!pedtobepickedup.IsInVehicle(taxi, false))
+                                    if (!_currentSubject.IsInVehicle(_taxi, false))
                                     {
-                                        pedtobepickedup.Delete();
+                                        _currentSubject.Delete();
                                         break;
                                     }
                                 }
                                 else
                                 {
-                                    pedtobepickedup.Delete();
+                                    _currentSubject.Delete();
                                     break;
                                 }
                             }
@@ -156,32 +154,29 @@ namespace Arrest_Manager.Services
                             {
                                 break;
                             }
-
                         }
                         catch (Exception e)
                         {
                             Game.LogTrivial(e.ToString());
-                            if (pedtobepickedup.Exists())
+                            if (_currentSubject.Exists())
                             {
-                                pedtobepickedup.Delete();
+                                _currentSubject.Delete();
                             }
                             break;
                         }
                     }
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
                 {
                     Game.LogTrivial(e.ToString());
                     Game.DisplayNotification("The taxi pickup service was interrupted");
-                    if (taxi.Exists())
+                    if (_taxi.Exists())
                     {
-                        taxi.Delete();
+                        _taxi.Delete();
                     }
-                    if (taxidriver.Exists()) { taxidriver.Delete(); }
-                    if (pedtobepickedup.Exists()) { pedtobepickedup.Delete(); }
+                    if (_taxiDriver.Exists()) { _taxiDriver.Delete(); }
+                    if (_currentSubject.Exists()) { _currentSubject.Delete(); }
                 }
-#pragma warning restore CA1031 // Do not catch general exception types
             });
         }
     }
