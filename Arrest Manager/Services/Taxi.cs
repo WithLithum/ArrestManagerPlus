@@ -42,10 +42,7 @@ namespace Arrest_Manager.Services
                     pedtobepickedup.BlockPermanentEvents = true;
                     pedtobepickedup.Tasks.StandStill(-1);
                     Functions.SetPedCantBeArrestedByPlayer(pedtobepickedup, true);
-                    if (EntryPoint.IsLSPDFRPlusRunning)
-                    {
-                        API.LspdfrPlusFunctions.AddCountToStatistic(Main.PluginName, "Taxis called");
-                    }
+
                     float Heading;
                     bool UseSpecialID = true;
                     Vector3 SpawnPoint;
