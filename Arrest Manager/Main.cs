@@ -1,34 +1,30 @@
 ﻿using System;
+using LSPD_First_Response.Mod.API;
+using Rage;
+using System.Reflection;
 
 namespace Arrest_Manager
 {
-    using LSPD_First_Response.Mod.API;
-    using Rage;
-    using System.Reflection;
-
     internal class Main : Plugin
     {
-        
         public Main()
         {
             Albo1125.Common.UpdateChecker.VerifyXmlNodeExists(PluginName, FileID, DownloadURL, Path);
-            Albo1125.Common.DependencyChecker.RegisterPluginForDependencyChecks(PluginName);   
+            Albo1125.Common.DependencyChecker.RegisterPluginForDependencyChecks(PluginName);
         }
-      
+
         public override void Finally()
         {
-            
         }
 
         public override void Initialize()
         {
             //Event handler for detecting if the player goes on duty
             Game.LogTrivial("Arrest Manager " + Assembly.GetExecutingAssembly().GetName().Version.ToString() + ", developed by Albo1125, loaded successfully!");
-            
+
             Game.LogTrivial("Please go on duty to start Arrest Manager.");
 
             Functions.OnOnDutyStateChanged += Functions_OnOnDutyStateChanged;
-
         }
         internal static readonly Version Albo1125CommonVer = new Version("6.6.3.0");
         internal static readonly Version MadeForGTAVersion = new Version("1.0.1604.1");

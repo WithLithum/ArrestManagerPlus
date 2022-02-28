@@ -251,7 +251,7 @@ namespace Arrest_Manager
                 suspect.Tasks.StandStill(-1);
                 suspect.Tasks.PlayAnimation("mp_arresting", "idle", 8f, AnimationFlags.UpperBodyOnly | AnimationFlags.SecondaryTask | AnimationFlags.Loop);
 
-                EntryPoint.suspectsArrestedByPlayer.Add(suspect);
+                EntryPoint.SuspectsArrestedByPlayer.Add(suspect);
                 API.Functions.OnPlayerArrestedPed(suspect);
             });
         }

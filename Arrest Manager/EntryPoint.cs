@@ -7,12 +7,10 @@ using Rage;
 using Rage.Native;
 using LSPD_First_Response.Mod.API;
 
-
 namespace Arrest_Manager
 {
     internal static class EntryPoint
     {
-
         //PROPERTIES FOR CHOICE & KEYS
         private static bool MessageReceived { get; set; }
         internal static bool CanChoose { get; set; }
@@ -58,9 +56,7 @@ namespace Arrest_Manager
             int node_id = GetNearestDrivingNodeID(pos, Nth, nodeType);
             if (IsNodeIDValid(node_id))
             {
-                Vector3 out_position;
-
-                NativeFunction.Natives.GET_VEHICLE_NODE_POSITION(node_id, out out_position);
+                NativeFunction.Natives.GET_VEHICLE_NODE_POSITION(node_id, out Vector3 out_position);
 
                 return out_position;
             }
@@ -95,9 +91,8 @@ namespace Arrest_Manager
             return spawnpoint;
         }
 
-
-        internal static List<Ped> suspectsArrestedByPlayer { get; set; }
-        private static List<Ped> SuspectsNotArrestedByPlayer = new List<Ped>();
+        internal static List<Ped> SuspectsArrestedByPlayer { get; set; }
+        private static readonly List<Ped> SuspectsNotArrestedByPlayer = new List<Ped>();
 
         private static void IsPlayerArrestingAnyPed()
         {
@@ -115,32 +110,23 @@ namespace Arrest_Manager
                             Ped nearestPed = playerPed.GetNearbyPeds(1)[0];
                             if (Functions.IsPedArrested(nearestPed))
                             {
-                                arrestingOfficer = Functions.GetPedArrestingOfficer(nearestPed);
-                                if ((arrestingOfficer == playerPed) && !suspectsArrestedByPlayer.Contains(nearestPed))
+                                ArrestingOfficer = Functions.GetPedArrestingOfficer(nearestPed);
+                                if ((ArrestingOfficer == playerPed) && !SuspectsArrestedByPlayer.Contains(nearestPed))
                                 {
-                                    suspectsArrestedByPlayer.Add(nearestPed);
+                                    SuspectsArrestedByPlayer.Add(nearestPed);
 
                                     suspectsWithVehicles.Add(nearestPed, nearestPed.LastVehicle);
                                     if (suspectsWithVehicles.ContainsKey(nearestPed)) { Game.LogTrivial("Contains key after add"); }
                                     NativeFunction.Natives.SET_PED_DROPS_WEAPON(nearestPed); Game.LogTrivial("Weapon Dropped");
                                     API.Functions.OnPlayerArrestedPed(nearestPed);
-
-
-
                                 }
-
-                                else if (!SuspectsNotArrestedByPlayer.Contains(nearestPed) && !suspectsArrestedByPlayer.Contains(nearestPed))
+                                else if (!SuspectsNotArrestedByPlayer.Contains(nearestPed) && !SuspectsArrestedByPlayer.Contains(nearestPed))
                                 {
-
-
                                     Game.LogTrivial("Adding suspect not arrested by player");
                                     SuspectsNotArrestedByPlayer.Add(nearestPed);
-
-
                                 }
                             }
                         }
-
                     }
                     catch (ThreadAbortException) { break; }
                     catch (Exception e)
@@ -152,21 +138,21 @@ namespace Arrest_Manager
         }
 
         internal static readonly Random SharedRandomInstance = new Random();
-        private static bool checkingForArrestedByPlayer { get; set; }
+        private static bool CheckingForArrestedByPlayer { get; set; }
 
-        private static Ped arrestingOfficer { get; set; }
-        private static bool canIWarpToJail { get; set; }
-        internal static Ped suspectAPI { get; set; }
+        private static Ped ArrestingOfficer { get; set; }
+        private static bool CanTeleportToJail { get; set; }
+        internal static Ped SuspectAPI { get; set; }
 
-        internal static Ped suspectFromVehicle { get; set; }
-        private static bool releaseMessageReceived { get; set; }
+        internal static Ped SuspectFromVehicle { get; set; }
+        private static bool ReleaseMessageReceived { get; set; }
 
         private static bool OfficerAudio { get; set; }
 
         private static bool DispatchVoice { get; set; }
         public static KeysConverter KeyConvert { get; } = new KeysConverter();
-        private static List<string> namesUsed { get; set; }
-        private static Dictionary<Ped, Vehicle> suspectsWithVehicles = new Dictionary<Ped, Vehicle>();
+        private static List<string> NamesUsed { get; set; }
+        private static readonly Dictionary<Ped, Vehicle> suspectsWithVehicles = new Dictionary<Ped, Vehicle>();
         internal static bool IsLSPDFRPlusRunning { get; set; }
         internal static bool AllowWarping { get; set; } = true;
 
@@ -222,7 +208,6 @@ namespace Arrest_Manager
                 if (!Coroner.CoronerVehicleModel.IsValid || !Coroner.CoronerVehicleModel.IsVehicle)
                 {
                     Game.LogTrivial("Arrest Manager: The specified coroner vehicle is either invalid or not a vehicle. Use at own risk! " + Coroner.CoronerVehicleModel.Name);
-
                 }
 
                 UseDisplayNameForVehicle = InitializeFile().ReadBoolean("Misc", "UseDisplayNameForVehicle", true);
@@ -247,13 +232,13 @@ namespace Arrest_Manager
             CanChoose = true;
             CheckForJail = true;
 
-            namesUsed = new List<string>();
-            arrestingOfficer = null;
-            suspectsArrestedByPlayer = new List<Ped>();
-            canIWarpToJail = true;
+            NamesUsed = new List<string>();
+            ArrestingOfficer = null;
+            SuspectsArrestedByPlayer = new List<Ped>();
+            CanTeleportToJail = true;
 
-            checkingForArrestedByPlayer = false;
-            releaseMessageReceived = false;
+            CheckingForArrestedByPlayer = false;
+            ReleaseMessageReceived = false;
             bool doorsClosed = false;
 
             SceneManager.CreateMenus();
@@ -280,7 +265,6 @@ namespace Arrest_Manager
                         GameFiber.Yield();
                         playerPed = Game.LocalPlayer.Character;
 
-
                         //Check: first for warp, release, then for multi, then for single
 
                     }
@@ -297,7 +281,6 @@ namespace Arrest_Manager
                         }
                         else
                         {
-
                             doorsClosed = false;
                         }
                     }
@@ -307,7 +290,6 @@ namespace Arrest_Manager
             Game.LogTrivial("AM+: Done starting fiber");
         }
         //Eventhandlers for on/off duty
-
 
         public static bool IsLSPDFRPluginRunning(string Plugin, Version minversion = null)
         {
@@ -319,7 +301,6 @@ namespace Arrest_Manager
             }
             return false;
         }
-        public static Assembly LSPDFRResolveEventHandler(object sender, ResolveEventArgs args) { foreach (Assembly assembly in Functions.GetAllUserPlugins()) { if (args.Name.IndexOf(assembly.GetName().Name, StringComparison.OrdinalIgnoreCase) >= 0) { return assembly; } } return null; }
 
         internal static void Initialize()
         {

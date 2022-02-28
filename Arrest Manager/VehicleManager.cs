@@ -36,8 +36,8 @@ namespace Arrest_Manager
             if (RecruitNearbyTowTrucks)
             {
                 Entity[] nearbypeds = World.GetEntities(Game.LocalPlayer.Character.Position, EntryPoint.SceneManagementSpawnDistance * 0.75f, GetEntitiesFlags.ConsiderHumanPeds | GetEntitiesFlags.ExcludePlayerPed);
-                nearbypeds = (from x in nearbypeds orderby (Game.LocalPlayer.Character.DistanceTo(x.Position)) select x).ToArray();
-                foreach (var nearest in nearbypeds.Where(x => x.Exists()))
+                nearbypeds = (from x in nearbypeds orderby (Game.LocalPlayer.Character.DistanceTo(x.Position)) select x).Where(x => x.Exists()).ToArray();
+                foreach (var nearest in nearbypeds)
                 {
                     var nearestPed = (Ped)nearest;
                     if (nearestPed.IsInAnyVehicle(false) && nearestPed.CurrentVehicle.HasTowArm && !nearestPed.CurrentVehicle.TowedVehicle.Exists() && !TowTrucksBeingUsed.Contains(nearestPed.CurrentVehicle))
@@ -115,7 +115,7 @@ namespace Arrest_Manager
                   if (!car.Exists()) { return; }
                   try
                   {
-                      bool flatbed = true;
+                      var flatbed = true;
                       if (car.HasOccupants)
                       {
                           Game.DisplayNotification("Vehicle has occupants. Aborting tow.");
@@ -123,7 +123,7 @@ namespace Arrest_Manager
                       }
                       if (car.IsPoliceVehicle)
                       {
-                          uint noti = Game.DisplayNotification("Are you sure you want to tow the police vehicle? ~h~~b~Y/N");
+                          var noti = Game.DisplayNotification("Are you sure you want to tow the police vehicle? ~h~~b~Y/N");
                           while (true)
                           {
                               GameFiber.Yield();
@@ -175,10 +175,10 @@ namespace Arrest_Manager
                       else
                       {
                           float Heading;
-                          bool UseSpecialID = true;
+                          var UseSpecialID = true;
                           Vector3 SpawnPoint;
                           float travelDistance;
-                          int waitCount = 0;
+                          var waitCount = 0;
                           while (true)
                           {
                               GetSpawnPoint(car.Position, out SpawnPoint, out Heading, UseSpecialID);
@@ -188,7 +188,7 @@ namespace Arrest_Manager
                               {
                                   var spawnDirection = car.Position - SpawnPoint;
                                   spawnDirection.Normalize();
-                                  float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(spawnDirection);
+                                  var HeadingToPlayer = MathHelper.ConvertDirectionToHeading(spawnDirection);
 
                                   if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
                                   {
@@ -271,8 +271,8 @@ namespace Arrest_Manager
                       driver.Tasks.PerformDrivingManeuver(VehicleManeuver.Wait);
                       towTruck.IsSirenOn = true;
                       GameFiber.Wait(2000);
-                      bool automaticallyAttach = false;
-                      bool showImpoundMsg = true;
+                      var automaticallyAttach = false;
+                      var showImpoundMsg = true;
                       if (flatbed)
                       {
                           while (car && car.HasOccupants)
@@ -445,7 +445,7 @@ namespace Arrest_Manager
         }
 
         public string[] insurancevehicles = new string[] { "JACKAL", "ASTEROPE", "TAILGATER", "PREMIER", "FUSILADE" };
-        private Blip businesscarblip;
+        private Blip businessCarBlip;
         private Ped passenger;
         private Vehicle businessCar;
         internal void RequestInsurance()
@@ -454,14 +454,14 @@ namespace Arrest_Manager
               {
                   try
                   {
-                      Vehicle[] nearbyvehs = Game.LocalPlayer.Character.GetNearbyVehicles(2);
-                      if (nearbyvehs.Length == 0)
+                      var nearbyVehicles = Game.LocalPlayer.Character.GetNearbyVehicles(2);
+                      if (nearbyVehicles.Length == 0)
                       {
                           Game.DisplayNotification("~r~Couldn't detect a close enough vehicle.");
                           return;
                       }
 
-                      car = nearbyvehs[0];
+                      car = nearbyVehicles[0];
                       if (Vector3.Distance(Game.LocalPlayer.Character.Position, car.Position) > 6f)
                       {
                           Game.DisplayNotification("~r~Couldn't detect a close enough vehicle.");
@@ -470,9 +470,9 @@ namespace Arrest_Manager
 
                       if (car.HasOccupants)
                       {
-                          if (nearbyvehs.Length == 2)
+                          if (nearbyVehicles.Length == 2)
                           {
-                              car = nearbyvehs[1];
+                              car = nearbyVehicles[1];
                               if (car.HasOccupants)
                               {
                                   Game.DisplayNotification("~r~Couldn't detect a close enough vehicle without occupants.");
@@ -519,11 +519,11 @@ namespace Arrest_Manager
                           modelName = modelName[0].ToString().ToUpper() + modelName.Substring(1);
                       }
 
-                      Ped playerPed = Game.LocalPlayer.Character;
+                      var playerPed = Game.LocalPlayer.Character;
 
-                      Vector3 SpawnPoint = World.GetNextPositionOnStreet(playerPed.Position.Around(EntryPoint.SceneManagementSpawnDistance));
+                      var SpawnPoint = World.GetNextPositionOnStreet(playerPed.Position.Around(EntryPoint.SceneManagementSpawnDistance));
                       float travelDistance;
-                      int waitCount = 0;
+                      var waitCount = 0;
                       while (true)
                       {
                           SpawnPoint = World.GetNextPositionOnStreet(playerPed.Position.Around(EntryPoint.SceneManagementSpawnDistance));
@@ -549,12 +549,12 @@ namespace Arrest_Manager
                       car.MustBeHotwired = false;
                       Game.DisplayNotification("mphud", "mp_player_ready", "~h~Mors Mutual Insurance", "~b~Vehicle Pickup Status Update", "Two of our employees are en route to pick up our client's ~h~" + modelName + ".");
                       businessCar = new Vehicle(insurancevehicles[SharedRandom.Next(insurancevehicles.Length)], SpawnPoint);
-                      businesscarblip = businessCar.AttachBlip();
-                      businesscarblip.Color = System.Drawing.Color.Blue;
+                      businessCarBlip = businessCar.AttachBlip();
+                      businessCarBlip.Color = System.Drawing.Color.Blue;
                       businessCar.IsPersistent = true;
-                      Vector3 directionFromVehicleToPed = car.Position - businessCar.Position;
-                      directionFromVehicleToPed.Normalize();
-                      businessCar.Heading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed);
+                      var dir = car.Position - businessCar.Position;
+                      dir.Normalize();
+                      businessCar.Heading = MathHelper.ConvertDirectionToHeading(dir);
                       driver = new Ped("a_m_y_business_02", businessCar.Position, businessCar.Heading)
                       {
                           BlockPermanentEvents = true
@@ -585,16 +585,16 @@ namespace Arrest_Manager
                           {
                               SpawnPoint = World.GetNextPositionOnStreet(car.Position);
                               businessCar.Position = SpawnPoint;
-                              directionFromVehicleToPed = car.Position - SpawnPoint;
-                              directionFromVehicleToPed.Normalize();
+                              dir = car.Position - SpawnPoint;
+                              dir.Normalize();
 
-                              businessCar.Heading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed);
+                              businessCar.Heading = MathHelper.ConvertDirectionToHeading(dir);
                           }
                       }
 
                       driver.PlayAmbientSpeech("GENERIC_HOWS_IT_GOING", true);
                       passenger.Tasks.LeaveVehicle(LeaveVehicleFlags.None).WaitForCompletion();
-                      Rage.Native.NativeFunction.Natives.SET_PED_CAN_RAGDOLL(passenger, false);
+                      NativeFunction.Natives.SET_PED_CAN_RAGDOLL(passenger, false);
                       passenger.Tasks.FollowNavigationMeshToPosition(car.GetOffsetPosition(Vector3.RelativeLeft * 2f), car.Heading, 2f).WaitForCompletion(2000);
                       driver.Dismiss();
                       passenger.Tasks.FollowNavigationMeshToPosition(car.GetOffsetPosition(Vector3.RelativeLeft * 2f), car.Heading, 2f).WaitForCompletion(3000);
@@ -610,7 +610,7 @@ namespace Arrest_Manager
                       passenger.Dismiss();
                       car.Dismiss();
                       carblip.Delete();
-                      businesscarblip.Delete();
+                      businessCarBlip.Delete();
                       GameFiber.Sleep(9000);
                       Game.DisplayNotification("mphud", "mp_player_ready", "~h~Mors Mutual Insurance", "~b~Vehicle Pickup Status Update", "Thank you for letting us collect our client's ~h~" + modelName + "!");
                   }
@@ -619,7 +619,7 @@ namespace Arrest_Manager
                       Game.LogTrivial(e.ToString());
                       Game.LogTrivial("Insurance company Crashed");
                       Game.DisplayNotification("The insurance pickup service was interrupted.");
-                      if (businesscarblip.Exists()) { businesscarblip.Delete(); }
+                      if (businessCarBlip.Exists()) { businessCarBlip.Delete(); }
                       if (carblip.Exists()) { carblip.Delete(); }
                       if (driver.Exists()) { driver.Delete(); }
                       if (car.Exists()) { car.Delete(); }

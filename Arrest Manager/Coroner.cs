@@ -1,4 +1,5 @@
 ﻿using Albo1125.Common.CommonLibrary;
+using Arrest_Manager.Services.Coroners;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using Rage.Native;
@@ -20,6 +21,7 @@ namespace Arrest_Manager
         private static readonly List<Ped> bodiesBeingHandled = new List<Ped>();
 
         private readonly List<Ped> deadBodies;
+        private readonly List<BodyData> bodyDatas = new List<BodyData>();
         private Vehicle coronerVeh;
         private Ped driver;
         private Ped passenger;
@@ -63,10 +65,10 @@ namespace Arrest_Manager
                 try
                 {
                     float Heading;
-                    bool UseSpecialID = true;
+                    var UseSpecialID = true;
                     Vector3 SpawnPoint;
                     float travelDistance;
-                    int waitCount = 0;
+                    var waitCount = 0;
                     while (true)
                     {
                         SceneManager.GetSpawnPoint(destination, out SpawnPoint, out Heading, UseSpecialID);
@@ -74,10 +76,10 @@ namespace Arrest_Manager
                         waitCount++;
                         if (Vector3.Distance(destination, SpawnPoint) > EntryPoint.SceneManagementSpawnDistance - 15f && travelDistance < (EntryPoint.SceneManagementSpawnDistance * 4.5f))
                         {
-                            Vector3 directionFromVehicleToPed1 = destination - SpawnPoint;
-                            directionFromVehicleToPed1.Normalize();
+                            var dir2 = destination - SpawnPoint;
+                            dir2.Normalize();
 
-                            float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
+                            var HeadingToPlayer = MathHelper.ConvertDirectionToHeading(dir2);
 
                             if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
                             {
@@ -178,9 +180,9 @@ namespace Arrest_Manager
                 obj.Delete();
             }
             GameFiber.Wait(2500);
-            int randomRoll = EntryPoint.SharedRandomInstance.Next(1, 23);
+            var randomRoll = EntryPoint.SharedRandomInstance.Next(1, 23);
 
-            string msg = "";
+            var msg = "";
             switch (randomRoll)
             {
                 case 1:
@@ -263,6 +265,15 @@ namespace Arrest_Manager
             GameFiber.Wait(3000);
             driver.Tasks.CruiseWithVehicle(coronerVeh, 15.0f, VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians);
 
+            GameFiber.StartNew(() =>
+            {
+                foreach (var bodyData in bodyDatas)
+                {
+                    GameFiber.Sleep(25);
+                    bodyData.DisplayNotification();
+                }
+            }, "AM+ Coroner Report");
+
             driver.Dismiss();
             coronerVeh.Dismiss();
         }
@@ -274,7 +285,7 @@ namespace Arrest_Manager
             driver.Tasks.GoToOffsetFromEntity(body, 10000, 2.4f, 1.0f, 8.0f).WaitForCompletion();
             if (Vector3.Distance(driver.Position, Game.LocalPlayer.Character.Position) < 60f)
             {
-                Rage.Object camera = new Rage.Object("prop_ing_camera_01", driver.GetOffsetPosition(Vector3.RelativeTop * 30));
+                var camera = new Rage.Object("prop_ing_camera_01", driver.GetOffsetPosition(Vector3.RelativeTop * 30));
                 driver.Tasks.PlayAnimation("anim@mp_player_intupperphotography", "idle_a_fp", 8.0F, AnimationFlags.None);
                 camera.Heading = driver.Heading - 180;
                 camera.Position = driver.GetOffsetPosition((Vector3.RelativeTop * 0.68f) + (Vector3.RelativeFront * 0.33f));
@@ -307,8 +318,10 @@ namespace Arrest_Manager
                 passenger.Tasks.PlayAnimation("amb@medic@standing@tendtodead@exit", "exit", 8.0F, AnimationFlags.None).WaitForCompletion();
                 GameFiber.Wait(1000);
             }
+            var cause = GetCauseOfDeathString(body);
+            bodyDatas.Add(new BodyData(body, cause));
 
-            Game.DisplaySubtitle("~b~Passenger~w~: " + GetCauseOfDeathPrelude() + GetCauseOfDeathString(body) + "~b~.", 6000);
+            Game.DisplaySubtitle("~b~Passenger~w~: " + GetCauseOfDeathPrelude() + cause + "~b~.", 6000);
             if (body.Exists())
             {
                 if (deadBodies.Contains(body))
@@ -393,7 +406,7 @@ namespace Arrest_Manager
 
         private static List<Ped> GetNearbyDeadPeds(Vector3 pos, float radius = 35)
         {
-            List<Ped> nearbyDeads = new List<Ped>();
+            var nearbyDeads = new List<Ped>();
             foreach (Ped ped in World.EnumeratePeds())
             {
                 if (ped.Exists() && ped.IsDead && !bodiesBeingHandled.Contains(ped) && ped.DistanceTo(pos) < radius)
@@ -407,29 +420,29 @@ namespace Arrest_Manager
         private static void TaskCoronerDriveToPosition(Ped driver, Vehicle veh, Vector3 pos)
         {
             Ped playerPed = Game.LocalPlayer.Character;
-            int drivingLoopCount = 0;
-            bool transportVanTeleported = false;
-            int waitCount = 0;
-            bool forceCloseSpawn = false;
+            var drivingLoopCount = 0;
+            var transportVanTeleported = false;
+            var waitCount = 0;
+            var forceCloseSpawn = false;
 
             GameFiber.StartNew(delegate
             {
                 while (!forceCloseSpawn)
                 {
                     GameFiber.Yield();
-                    if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(EntryPoint.SceneManagementKey)) // || Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(multiTransportKey))
+                    if (ExtensionMethods.IsKeyDownComputerCheck(EntryPoint.SceneManagementKey)) // || Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownComputerCheck(multiTransportKey))
                     {
                         GameFiber.Sleep(500);
-                        if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementKey))// || Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(multiTransportKey))
+                        if (ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementKey))// || Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(multiTransportKey))
                         {
                             GameFiber.Sleep(500);
-                            if (Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementKey))// || Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(multiTransportKey))
+                            if (ExtensionMethods.IsKeyDownRightNowComputerCheck(EntryPoint.SceneManagementKey))// || Albo1125.Common.CommonLibrary.ExtensionMethods.IsKeyDownRightNowComputerCheck(multiTransportKey))
                             {
                                 forceCloseSpawn = true;
                             }
                             else
                             {
-                                Game.DisplayNotification("Hold down the ~b~" + Albo1125.Common.CommonLibrary.ExtensionMethods.GetKeyString(EntryPoint.SceneManagementKey, Keys.None) + " ~s~to force a close spawn.");
+                                Game.DisplayNotification("Hold down the ~b~" + ExtensionMethods.GetKeyString(EntryPoint.SceneManagementKey, Keys.None) + " ~s~to force a close spawn.");
                             }
                         }
                     }
@@ -471,10 +484,10 @@ namespace Arrest_Manager
                 {
                     Vector3 SpawnPoint;
                     float Heading;
-                    bool UseSpecialID = true;
+                    var UseSpecialID = true;
 
                     float travelDistance;
-                    int WaitCount = 0;
+                    var WaitCount = 0;
                     while (true)
                     {
                         SceneManager.GetSpawnPoint(pos, out SpawnPoint, out Heading, UseSpecialID);
@@ -485,7 +498,7 @@ namespace Arrest_Manager
                             Vector3 directionFromVehicleToPed1 = (Game.LocalPlayer.Character.Position - SpawnPoint);
                             directionFromVehicleToPed1.Normalize();
 
-                            float HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
+                            var HeadingToPlayer = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
 
                             if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
                             {
@@ -514,7 +527,7 @@ namespace Arrest_Manager
 
                     Vector3 SpawnPoint = World.GetNextPositionOnStreet(pos.Around2D(15f));
 
-                    int waitCounter = 0;
+                    var waitCounter = 0;
                     while ((SpawnPoint.Z - pos.Z < -3f) || (SpawnPoint.Z - pos.Z > 3f) || (Vector3.Distance(SpawnPoint, pos) > 25f))
                     {
                         waitCounter++;
@@ -530,7 +543,7 @@ namespace Arrest_Manager
                     Vector3 directionFromVehicleToPed = (pos - SpawnPoint);
                     directionFromVehicleToPed.Normalize();
 
-                    float vehicleHeading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed);
+                    var vehicleHeading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed);
                     veh.Heading = vehicleHeading;
                     transportVanTeleported = true;
 
