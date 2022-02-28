@@ -10,13 +10,12 @@ using System.Windows.Forms;
 
 namespace Arrest_Manager
 {
-
     internal class Coroner
     {
         internal static Model CoronerVehicleModel { get; set; } = new Model("SPEEDO");
         internal static Model CoronerModel { get; set; } = new Model("S_M_M_Doctor_01");
 
-        private static readonly SoundPlayer cameraSound = new SoundPlayer("LSPDFR/audio/scanner/Arrest Manager Audio/Camera.wav");       
+        private static readonly SoundPlayer cameraSound = new SoundPlayer("LSPDFR/audio/scanner/Arrest Manager Audio/Camera.wav");
 
         private static readonly List<Ped> bodiesBeingHandled = new List<Ped>();
 
@@ -38,9 +37,7 @@ namespace Arrest_Manager
             return CanBeCalled(Game.LocalPlayer.Character.Position);
         }
 
-#pragma warning disable S4210 // Windows Forms entry points should be marked with STAThread
         public static void Main()
-#pragma warning restore S4210 // Windows Forms entry points should be marked with STAThread
         {
             if (GetNearbyDeadPeds(Game.LocalPlayer.Character.Position).Count == 0) { Game.DisplaySubtitle("No nearby dead people were found, sorry!"); return; }
             new Coroner(Game.LocalPlayer.Character.Position).InitCoronerThread();
@@ -154,36 +151,31 @@ namespace Arrest_Manager
                     }
                     LeaveScene();
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
                 {
                     Game.LogTrivial(e.ToString());
                     if (driver.Exists()) { driver.Delete(); }
                     if (passenger.Exists()) { passenger.Delete(); }
                     if (coronerVeh.Exists()) { coronerVeh.Delete(); }
-                    foreach (Entity ent in deadBodies)
+                    foreach (var ent in deadBodies.Where(x => x.Exists()))
                     {
-                        if (ent.Exists()) { ent.Delete(); }
+                        ent.Delete();
                     }
                     deadBodies.Clear();
-                    foreach (Entity ent in bodyBags)
+                    foreach (var ent in bodyBags.Where(x => x.Exists()))
                     {
-                        if (ent.Exists()) { ent.Delete(); }
+                        ent.Delete();
                     }
                 }
-#pragma warning restore CA1031 // Do not catch general exception types
             });
         }
 
         private void LeaveScene()
         {
             GameFiber.Wait(2500);
-            foreach (Rage.Object obj in bodyBags)
+            foreach (var obj in bodyBags.Where(x => x.Exists()))
             {
-                if (obj.Exists())
-                {
-                    obj.Delete();
-                }
+                obj.Delete();
             }
             GameFiber.Wait(2500);
             int randomRoll = EntryPoint.SharedRandomInstance.Next(1, 23);
@@ -271,7 +263,6 @@ namespace Arrest_Manager
             GameFiber.Wait(3000);
             driver.Tasks.CruiseWithVehicle(coronerVeh, 15.0f, VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians);
 
-
             driver.Dismiss();
             coronerVeh.Dismiss();
         }
@@ -286,7 +277,7 @@ namespace Arrest_Manager
                 Rage.Object camera = new Rage.Object("prop_ing_camera_01", driver.GetOffsetPosition(Vector3.RelativeTop * 30));
                 driver.Tasks.PlayAnimation("anim@mp_player_intupperphotography", "idle_a_fp", 8.0F, AnimationFlags.None);
                 camera.Heading = driver.Heading - 180;
-                camera.Position = driver.GetOffsetPosition(Vector3.RelativeTop * 0.68f + Vector3.RelativeFront * 0.33f);
+                camera.Position = driver.GetOffsetPosition((Vector3.RelativeTop * 0.68f) + (Vector3.RelativeFront * 0.33f));
                 camera.IsPositionFrozen = true;
 
                 Vector3 dirVect = body.Position - driver.Position;
@@ -317,7 +308,6 @@ namespace Arrest_Manager
                 GameFiber.Wait(1000);
             }
 
-
             Game.DisplaySubtitle("~b~Passenger~w~: " + GetCauseOfDeathPrelude() + GetCauseOfDeathString(body) + "~b~.", 6000);
             if (body.Exists())
             {
@@ -337,7 +327,6 @@ namespace Arrest_Manager
                     {
                         IsPositionFrozen = false,
                     });
-
                 }
                 if (body.Exists())
                 {
@@ -345,7 +334,6 @@ namespace Arrest_Manager
                 }
             }
             GameFiber.Wait(2500);
-            
         }
 
         private static string GetCauseOfDeathPrelude()
@@ -418,7 +406,6 @@ namespace Arrest_Manager
 
         private static void TaskCoronerDriveToPosition(Ped driver, Vehicle veh, Vector3 pos)
         {
-
             Ped playerPed = Game.LocalPlayer.Character;
             int drivingLoopCount = 0;
             bool transportVanTeleported = false;
@@ -452,17 +439,16 @@ namespace Arrest_Manager
             driver.Tasks.PerformDrivingManeuver(VehicleManeuver.GoForwardStraight).WaitForCompletion(500);
             while (Vector3.Distance(veh.Position, pos) > 35f)
             {
-
                 veh.Repair();
-                if (driveToPed == null || !driveToPed.IsActive)
+                if (driveToPed?.IsActive != true)
                 {
                     driveToPed = driver.Tasks.DriveToPosition(pos, MathHelper.ConvertKilometersPerHourToMetersPerSecond(60f), VehicleDrivingFlags.DriveAroundVehicles | VehicleDrivingFlags.DriveAroundObjects | VehicleDrivingFlags.AllowMedianCrossing | VehicleDrivingFlags.YieldToCrossingPedestrians);
                 }
+
                 NativeFunction.Natives.SET_DRIVE_TASK_DRIVING_STYLE(driver, 786607);
                 NativeFunction.Natives.SET_DRIVER_AGGRESSIVENESS(driver, 0f);
                 NativeFunction.Natives.SET_DRIVER_ABILITY(driver, 1f);
                 GameFiber.Wait(600);
-                
 
                 waitCount++;
                 if (waitCount == 70)
@@ -503,7 +489,6 @@ namespace Arrest_Manager
 
                             if (Math.Abs(MathHelper.NormalizeHeading(Heading) - MathHelper.NormalizeHeading(HeadingToPlayer)) < 150f)
                             {
-
                                 break;
                             }
                         }
@@ -565,7 +550,6 @@ namespace Arrest_Manager
                 {
                     veh.Position = World.GetNextPositionOnStreet(pos.Around2D(12f));
                 }
-
             }
             GameFiber.Wait(600);
         }

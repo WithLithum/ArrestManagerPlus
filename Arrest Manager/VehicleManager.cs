@@ -37,19 +37,16 @@ namespace Arrest_Manager
             {
                 Entity[] nearbypeds = World.GetEntities(Game.LocalPlayer.Character.Position, EntryPoint.SceneManagementSpawnDistance * 0.75f, GetEntitiesFlags.ConsiderHumanPeds | GetEntitiesFlags.ExcludePlayerPed);
                 nearbypeds = (from x in nearbypeds orderby (Game.LocalPlayer.Character.DistanceTo(x.Position)) select x).ToArray();
-                foreach (Entity nearent in nearbypeds)
+                foreach (var nearest in nearbypeds.Where(x => x.Exists()))
                 {
-                    if (nearent.Exists())
+                    var nearestPed = (Ped)nearest;
+                    if (nearestPed.IsInAnyVehicle(false) && nearestPed.CurrentVehicle.HasTowArm && !nearestPed.CurrentVehicle.TowedVehicle.Exists() && !TowTrucksBeingUsed.Contains(nearestPed.CurrentVehicle))
                     {
-                        Ped nearped = (Ped)nearent;
-                        if (nearped.IsInAnyVehicle(false) && nearped.CurrentVehicle.HasTowArm && !nearped.CurrentVehicle.TowedVehicle.Exists() && !TowTrucksBeingUsed.Contains(nearped.CurrentVehicle))
-                        {
-                            TowDriver = nearped;
-                            TowDriver.MakeMissionPed();
-                            TowTruck = TowDriver.CurrentVehicle;
-                            TowTruck.IsPersistent = true;
-                            return true;
-                        }
+                        TowDriver = nearestPed;
+                        TowDriver.MakeMissionPed();
+                        TowTruck = TowDriver.CurrentVehicle;
+                        TowTruck.IsPersistent = true;
+                        return true;
                     }
                 }
             }
@@ -433,7 +430,6 @@ namespace Arrest_Manager
                           car.Delete();
                       }
                   }
-#pragma warning disable CA1031 // Do not catch general exception types
                   catch (Exception e)
                   {
                       Game.LogTrivial("AM+: Tow truck script caught exception");
@@ -445,7 +441,6 @@ namespace Arrest_Manager
                       if (car.Exists()) { car.Delete(); }
                       if (towTruck.Exists()) { towTruck.Delete(); }
                   }
-#pragma warning restore CA1031 // Do not catch general exception types
               });
         }
 
@@ -619,7 +614,6 @@ namespace Arrest_Manager
                       GameFiber.Sleep(9000);
                       Game.DisplayNotification("mphud", "mp_player_ready", "~h~Mors Mutual Insurance", "~b~Vehicle Pickup Status Update", "Thank you for letting us collect our client's ~h~" + modelName + "!");
                   }
-#pragma warning disable CA1031 // Do not catch general exception types
                   catch (Exception e)
                   {
                       Game.LogTrivial(e.ToString());
@@ -632,7 +626,6 @@ namespace Arrest_Manager
                       if (businessCar.Exists()) { businessCar.Delete(); }
                       if (passenger.Exists()) { passenger.Delete(); }
                   }
-#pragma warning restore CA1031 // Do not catch general exception types
               });
         }
 
@@ -718,4 +711,3 @@ namespace Arrest_Manager
         }
     }
 }
-
